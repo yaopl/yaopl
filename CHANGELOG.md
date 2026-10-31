@@ -5,6 +5,9 @@ Loader (OPL) before the fork.
 
 ## Unreleased
 
+- GUI: The settings dialogs, the on-screen keyboard and the colour picker no longer draw a theme or language
+  that was replaced while they were open (a USB stick, SMB share or HDD with the configured theme or language
+  coming up, or the stick with the language pulled): the menu could show garbled text or freeze. (ce6323f5)
 - SMB: A game over SMB whose connection broke (for example after Samba dropped an idle PS2) no longer blocks
   every later disc read and IGR: a failed read or write releases the SMB lock, and a connection closed in the
   middle of a reply ends the read instead of looping forever. IGR then gets back to YAOPL. (f2c3a673,
