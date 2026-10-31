@@ -291,6 +291,12 @@ game settings, list removed        plain: 0 games: settings of game 40 not loade
                                    asan:  0 games: settings of game 40 not loaded
 language file <-> English x3       plain: 3 times file -> English: 0 allocations left, strings English
                                    asan:  3 times file -> English: 0 allocations left, strings English
+art cache ok                       plain: loaded ART/SLUS_123.45_COV | cover shown
+                                   asan:  loaded ART/SLUS_123.45_COV | cover shown
+art cache destroyed                plain: request on the freed cache: done
+                                   asan:  request on the freed cache: done
+art cache blocked                  plain: loaded ART/SLUS_123.45_COV | cover shown
+                                   asan:  loaded ART/SLUS_123.45_COV | cover shown
 readFile ok                        plain: ok: buffer returned, size 4096, descriptors left open 0
                                    asan:  ok: buffer returned, size 4096, descriptors left open 0
 readFile nomem                     plain: nomem: buffer NULL, size 0, descriptors left open 0
