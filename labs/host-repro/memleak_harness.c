@@ -43,17 +43,19 @@ static void harness_free(void *p)
 }
 
 #ifdef APPS
-#define APP_TITLE_MAX        128
-#define APP_PATH_MAX         128
-#define APP_BOOT_MAX         64
-#define APP_ARGV1_MAX        128
-#define CONFIG_KEY_NAME_LEN  32
-#define CONFIG_KEY_VALUE_LEN 256
-#define CONFIG_ITEM_STARTUP     "$Startup"
-#define CONFIG_ITEM_ALTSTARTUP  "$AltStartup"
-#define UNMOUNT_EXCEPTION       0x01
-#define _STR_ERR_FILE_INVALID   0
-enum { BDM_MODE4 = 4, HDD_MODE = 6, APP_MODE = 7 };
+#define APP_TITLE_MAX          128
+#define APP_PATH_MAX           128
+#define APP_BOOT_MAX           64
+#define APP_ARGV1_MAX          128
+#define CONFIG_KEY_NAME_LEN    32
+#define CONFIG_KEY_VALUE_LEN   256
+#define CONFIG_ITEM_STARTUP    "$Startup"
+#define CONFIG_ITEM_ALTSTARTUP "$AltStartup"
+#define UNMOUNT_EXCEPTION      0x01
+#define _STR_ERR_FILE_INVALID  0
+#define BDM_MODE4              4
+#define HDD_MODE               6
+#define APP_MODE               7
 typedef struct
 {
     char title[APP_TITLE_MAX + 1];
