@@ -295,8 +295,8 @@ apps list refresh x3 (20 apps)     plain: 20 apps listed, 3 allocations live (th
                                    asan:  20 apps listed, 3 allocations live (the list and its config: 3)
 app launch with an argument        plain: mass0:APPS/x/BOOT.ELF, argc 1, argument "-arg"
                                    asan:  mass0:APPS/x/BOOT.ELF, argc 1, argument "-arg"
-sbReadList, list allocation fails  plain: 0 games listed, 300 scanned nodes left
-                                   asan:  0 games listed, 300 scanned nodes left
+sbReadList, list allocation fails  plain: 0 games listed, 0 scanned nodes left
+                                   asan:  0 games listed, 0 scanned nodes left
 art cache ok                       plain: loaded ART/SLUS_123.45_COV | cover shown
                                    asan:  loaded ART/SLUS_123.45_COV | cover shown
 art cache destroyed                plain: request on the freed cache: done

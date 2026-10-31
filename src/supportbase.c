@@ -472,6 +472,13 @@ int sbReadList(base_game_info_t **list, const char *prefix, int *fsize, int *gam
     } else
         count = 0;
 
+    // the games not copied: the list could not be allocated
+    while (dlist_head) {
+        struct game_list_t *cur = dlist_head;
+        dlist_head = dlist_head->next;
+        free(cur);
+    }
+
     if (count > 0)
         *gamecount = count;
 
