@@ -305,7 +305,9 @@ int ioGetPendingRequestCount(void)
 
 int ioHasPendingRequests(void)
 {
-    return gReqList != NULL ? 1 : 0;
+    // ioBlockOps() waits in a loop for the IO thread to empty the queue: read it anew every time, or the
+    // compiler reads it once and the wait never ends
+    return *(struct io_request_t *volatile *)&gReqList != NULL ? 1 : 0;
 }
 
 #ifdef __EESIO_DEBUG
