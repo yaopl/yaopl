@@ -358,6 +358,11 @@ if (Want "langswitch") {
     Test "language file <-> English x3" langswitch-t
 }
 
+if (Want "texcache") {
+    Build texcache t "src\texcache.c" "load_image_request_t", "cacheLoadImage", "cacheClearItem", "cacheInitCache", "cacheDestroyCache", "cacheGetTexture"
+    foreach ($c in "ok", "destroyed", "blocked") { Test "art cache $c" texcache-t $c }
+}
+
 if (Want "readfile") {
     Build readfile t "src\util.c" "readFile"
     foreach ($c in "ok", "nomem", "short") { Test "readFile $c" readfile-t $c }
