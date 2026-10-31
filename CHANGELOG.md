@@ -5,6 +5,19 @@ Loader (OPL) before the fork.
 
 ## Unreleased
 
+- GUI: A theme that does not ship every button icon of the hint bar no longer freezes the menu; such a hint
+  shows its text without the icon. (85500f43)
+- In-game: With an HD Pro adaptor, a failed disc transfer no longer leaves the drive locked, which hung the
+  game at its next load. (639934bf)
+- GUI: A theme's or the default `bgm.ogg` that is not an Ogg stream no longer leaves a file open each time the
+  music starts. (9343404d)
+- GUI: A font file that cannot be read whole (its device removed during the read) is no longer used half read.
+  (98c6ea94)
+- GUI: Switching from a language to English, or losing the device with the language file, frees the
+  translation's memory. (dea645fa)
+- GUI: Removing a USB drive (or deleting a game) while the cursor rests on a game no longer crashes the menu
+  when that game's settings were still loading. (c0d9b51e)
+- GUI: The device pages added to the menu at start can no longer, in a rare timing, freeze it. (d754bb56)
 - GUI: The menu no longer freezes now and then right after start, when the games of a USB device appear, or
   when a device with themes or languages is connected; it happened most with large themes and a DualShock 3.
   (b45a592d)
