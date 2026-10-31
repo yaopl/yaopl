@@ -29,7 +29,7 @@
 #include <delaythread.h>
 
 // mmceman devctl and ioctl2 codes (ps2-mmce/mmceman: mmceman/include/mmce_cmds.h, mmceman/src/mmce_fs.c)
-#define MMCE_DEVCTL_PING       0x1  // -1 when no card answers on that port
+#define MMCE_DEVCTL_PING       0x1  // -1 when no card answers on that port, < 0 without mmceman
 #define MMCE_DEVCTL_GET_STATUS 0x2  // bit 0: the card is busy
 #define MMCE_DEVCTL_SET_GAMEID 0x8  // the game ID string, so the card switches to that game's memory card
 #define MMCE_IOCTL2_GET_FD     0x80 // the card's own descriptor of an open file
@@ -74,9 +74,9 @@ static int mmceProbePorts(int again)
 
     if (ports < 0 || again) {
         ports = 0;
-        if (fileXioDevctl("mmce0:/", MMCE_DEVCTL_PING, NULL, 0, NULL, 0) != -1)
+        if (fileXioDevctl("mmce0:/", MMCE_DEVCTL_PING, NULL, 0, NULL, 0) >= 0)
             ports |= 1 << 2;
-        if (fileXioDevctl("mmce1:/", MMCE_DEVCTL_PING, NULL, 0, NULL, 0) != -1)
+        if (fileXioDevctl("mmce1:/", MMCE_DEVCTL_PING, NULL, 0, NULL, 0) >= 0)
             ports |= 1 << 3;
     }
 
