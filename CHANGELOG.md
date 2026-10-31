@@ -5,6 +5,18 @@ Loader (OPL) before the fork.
 
 ## Unreleased
 
+- GUI: After a 720p, 1080i or other HD video mode, the menu no longer runs above the background music and the
+  cover loading until the next start: leaving the mode gives the menu its normal priority back. (9ab1f447)
+- GUI: The menu no longer freezes now and then when a theme or language font loads while text is drawn, for
+  example when the USB drive with the chosen theme comes up after start. (74a6607a)
+- GUI: Changing the theme or language while covers load no longer damages memory, which could crash the menu
+  later; covers asked for while the NBD server runs load afterwards instead of never. (20511b72)
+- GUI: Display Settings no longer shows or saves garbage when a device with themes or languages comes or goes
+  while it is open; a theme or language picked from a device that has gone is not applied. (a0d72638)
+- GUI: A theme image whose `default` names no built-in picture is left out instead of crashing the menu.
+  (9712bc26)
+- PADEMU: A DualShock 4 on USB gets its LED colour and vibration from the first connection in a game, not only
+  after it is plugged in again. (96f8f0c2)
 - SMB: A game over SMB whose connection broke (for example after Samba dropped an idle PS2) no longer blocks
   every later disc read and IGR: a failed read or write releases the SMB lock, and a connection closed in the
   middle of a reply ends the read instead of looping forever. IGR then gets back to YAOPL. (f2c3a673,
