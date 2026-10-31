@@ -88,9 +88,9 @@ Loader (OPL) before the fork.
 - UDPBD: With a read-only UDPBD server, the game menu has no Rename and Delete, and *Configure VMC* shows a
   note instead of *Failed to format VMC file*; a VMC set in a game's settings is not used and the game saves
   to the real memory card, without a question at every start. (9f556b55, 11037583, 7c375a09)
-- UDPBD: A read-only UDPBD server is never written to: YAOPL does not keep its game list cache (`games.bin`)
-  there, does not offer Rename and Delete for apps in its `APPS` folder, and does not pick it when it looks
-  for a device to save its own settings on. (c92f681d, afe59be2, 760d7e3c)
+- UDPBD: Nothing but the write check's test file is written to a read-only UDPBD server: YAOPL does not keep
+  its game list cache (`games.bin`) there, does not offer Rename and Delete for apps in its `APPS` folder, and
+  does not pick it when it looks for a device to save its own settings on. (c92f681d, afe59be2, 760d7e3c)
 - In-game: IGR no longer stalls games while their pad polling pauses (loading screens, movies): it scanned the
   game's memory again every time, which left the DualShock dead or dropping out in Gran Turismo 4 over UDPBD
   until it was replugged. Gran Turismo 4 no longer needs Compatibility Mode 6 for its pad. After patching a
@@ -173,7 +173,7 @@ The first release of the fork, on top of upstream OPL Beta-2271 (b3a21997).
 - Build: The README presents YAOPL, and a new user guide, `docs/USAGE.md`, replaces upstream's documentation:
   checked against the code, with UDPBD, MMCE and the ZSO limits. FORK.md was folded into this changelog and
   `CONTRIBUTING.md`. (91fb193c, 3980a6d4)
-- Build: The user documentation is a site now, <https://belomaxorka.github.io/yaopl/>, with a page per topic:
+- Build: The user documentation is a site now, <https://yaopl.github.io/yaopl/>, with a page per topic:
   installing and launching, every menu and setting with its default, each device (USB, MX4SIO, iLink, the HDD
   as exFAT or APA, SMB with PC setup, UDPBD, MMCE), adding games, game settings, cheats, VMCs, in-game reset,
   NBD and troubleshooting, all checked against the code. It replaces `docs/USAGE.md`. (2e28eebd..30d34adc)
