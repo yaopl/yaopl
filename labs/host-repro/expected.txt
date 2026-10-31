@@ -291,6 +291,12 @@ game settings, list removed        plain: 0 games: settings of game 40 not loade
                                    asan:  0 games: settings of game 40 not loaded
 language file <-> English x3       plain: 3 times file -> English: 0 allocations left, strings English
                                    asan:  3 times file -> English: 0 allocations left, strings English
+dialog frames, IO swaps theme      plain: 4 frames, 0 without the GUI lock, theme and language swapped
+                                   asan:  4 frames, 0 without the GUI lock, theme and language swapped
+keyboard frames, IO swaps theme    plain: 4 frames, 0 without the GUI lock, theme and language swapped
+                                   asan:  4 frames, 0 without the GUI lock, theme and language swapped
+colour frames, IO swaps theme      plain: 4 frames, 0 without the GUI lock, theme and language swapped
+                                   asan:  4 frames, 0 without the GUI lock, theme and language swapped
 art cache ok                       plain: loaded ART/SLUS_123.45_COV | cover shown
                                    asan:  loaded ART/SLUS_123.45_COV | cover shown
 art cache destroyed                plain: request on the freed cache: done
