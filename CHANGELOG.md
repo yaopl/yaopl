@@ -5,6 +5,12 @@ Loader (OPL) before the fork.
 
 ## Unreleased
 
+- Apps: An app started with an argument (`argv1=` in its `title.cfg`) gets it intact: it was read from memory
+  already freed when the menu closed. (e861b52e)
+- Apps: The apps list no longer loses memory each time it is built again, at start and whenever a USB drive
+  comes or goes or another page loads. (7dd0e924, e53856db)
+- GUI: A game list that does not fit in memory no longer loses the memory of every game found on each rescan.
+  (33cbfb42)
 - GUI: After a 720p, 1080i or other HD video mode, the menu no longer runs above the background music and the
   cover loading until the next start: leaving the mode gives the menu its normal priority back. (9ab1f447)
 - GUI: The menu no longer freezes now and then when a theme or language font loads while text is drawn, for
