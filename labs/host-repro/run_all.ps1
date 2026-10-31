@@ -290,15 +290,15 @@ if (Want "lang") {
 if (Want "thmlist") {
     # The same theme or language on several devices, and a device that goes away
     $removeDefine = if ((Get-Content -Raw (Join-Path $Opl "src\themes.c")).Contains("thmRemoveElements(")) { "/DHAVE_REMOVE" } else { "" }
-    $thmFuncs = "thmReadEntry", "thmRebuildGuiNames", "thmAddElements", "?thmReinit", "?thmRemoveElements", "thmSetGuiValue", "thmGetGuiValue", "thmFindGuiID", "thmGetFilePath"
-    $lngFuncs = "lngReadEntry", "lngRebuildLangNames", "lngAddLanguages", "?lngRemoveLanguages", "lngSetGuiValue", "lngGetGuiValue", "lngFindGuiID", "lngGetFilePath"
+    $thmFuncs = "thmReadEntry", "thmRebuildGuiNames", "thmAddElements", "?thmReinit", "?thmRemoveElements", "thmSetGuiValue", "thmGetGuiValue", "thmFindGuiID", "thmGetFilePath", "thmGetGuiList"
+    $lngFuncs = "lngReadEntry", "lngRebuildLangNames", "lngAddLanguages", "?lngRemoveLanguages", "lngSetGuiValue", "lngGetGuiValue", "lngFindGuiID", "lngGetFilePath", "lngGetGuiList"
     # A device whose prefix changes: the tree's helper, and whether the BDM and MMCE code call it then
     if ((Get-Content -Raw (Join-Path $Opl "src\supportbase.c")).Contains("void sbDropThemesLanguages(")) { $removeDefine += " /DHAVE_SB_DROP" }
     if ((Get-Content -Raw (Join-Path $Opl "src\bdmsupport.c")).Contains("sbDropThemesLanguages(oldPrefix")) { $removeDefine += " /DHAVE_BDM_PREFIX_DROP" }
     $mmce = Join-Path $Opl "src\mmcesupport.c"
     if ((Test-Path $mmce) -and (Get-Content -Raw $mmce).Contains("sbDropThemesLanguages(oldPrefix")) { $removeDefine += " /DHAVE_MMCE_PREFIX_DROP" }
     Build thmlist t "src\themes.c" $thmFuncs -Source2 "src\lang.c" -Funcs2 $lngFuncs -Source3 "src\config.c" -Funcs3 "?configGetDeviceRank" -Source4 "src\supportbase.c" -Funcs4 "?sbDropThemesLanguages" -Source5 "src\util.c" -Funcs5 "?listDeviceFiles", "?dropDeviceFiles" -Defines $removeDefine
-    foreach ($s in "dup-mc", "dup-usb", "remove", "fallback", "shift", "smb", "prefix-bdm", "prefix-mmce") { Test "Theme/language list $s" thmlist-t $s }
+    foreach ($s in "dup-mc", "dup-usb", "remove", "fallback", "shift", "smb", "prefix-bdm", "prefix-mmce", "dialog") { Test "Theme/language list $s" thmlist-t $s }
 }
 
 if (Want "history") {
