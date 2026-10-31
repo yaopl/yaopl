@@ -1029,9 +1029,12 @@ int guiDeferUpdate(struct gui_update_t *op)
         gUpdateEnd = up;
     }
 
+    // The GUI thread and the IO thread both append
+    int opId = gScheduledOps++;
+
     SignalSema(gSemaId);
 
-    return gScheduledOps++;
+    return opId;
 }
 
 static void guiHandleOp(struct gui_update_t *item)
@@ -1115,9 +1118,9 @@ static void guiHandleDeferredOps(void)
 
         gCompletedOps++;
     }
-    SignalSema(gSemaId);
-
+    // Still under the semaphore: the IO thread may be waiting to append, and it runs as soon as it is signalled
     gUpdateEnd = NULL;
+    SignalSema(gSemaId);
 }
 
 void guiExecDeferredOps(void)
