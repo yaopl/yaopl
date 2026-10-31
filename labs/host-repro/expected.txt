@@ -229,6 +229,8 @@ Theme/language list prefix-bdm     plain: dev+ thm[A]=<OPL> lng[]=English; prefi
                                    asan:  dev+ thm[A]=<OPL> lng[]=English; prefix thm[B]=B@mass0 lng[German]=German@mass0; 
 Theme/language list prefix-mmce    plain: dev+ thm[A]=<OPL> lng[]=English; prefix thm[B]=B@mmce1 lng[German]=German@mmce1; 
                                    asan:  dev+ thm[A]=<OPL> lng[]=English; prefix thm[B]=B@mmce1 lng[German]=German@mmce1; 
+Theme/language list dialog         plain: open thm[A] lng[Russian]; usb+ thm[A B] lng[Russian German]; usb- thm[A -] lng[Russian -]; OK thm[A]=A@mc? lng[Russian]=Russian@mc?; 
+                                   asan:  open thm[A] lng[Russian]; usb+ thm[A B] lng[Russian German]; usb- thm[A -] lng[Russian -]; OK thm[A]=A@mc? lng[Russian]=Russian@mc?; 
 GetBootFilename                    plain: cdrom0:\SLUS_200.62;1: record "SLUS_200.62" (11 characters) | cdrom0:\DATA\ABCDEFGHIJKLMNOPQRST.ELF;1: record "ABCDEFGHIJKLMNOP" (16 characters)
                                    asan:  cdrom0:\SLUS_200.62;1: record "SLUS_200.62" (11 characters) | cdrom0:\DATA\ABCDEFGHIJKLMNOPQRST.ELF;1: record "ABCDEFGHIJKLMNOP" (16 characters)
 PrepareGSM $GSMVMode=0             plain: $GSMVMode=0: mode used 2, interlace 1, ffmd 0, display 001BF9FF0182E2BC, cmdline "1 2 0 7874698008519356 56154283650848769 1 0 0 0 0 0"

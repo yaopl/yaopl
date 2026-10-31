@@ -1452,15 +1452,14 @@ static void thmLoad(const char *themePath)
     guiUnlock();
 }
 
+// Call under guiLock(): the IO thread changes the list when a device comes or goes, and Display Settings shows it.
 static void thmRebuildGuiNames(void)
 {
     int i;
 
-    if (guiThemesNames)
-        free(guiThemesNames);
-
-    // build the themes name list
-    guiThemesNames = (const char **)malloc((nThemes + 2) * sizeof(char **));
+    // build the themes name list, allocated once at its largest: the settings dialog keeps the pointer
+    if (guiThemesNames == NULL)
+        guiThemesNames = (const char **)malloc((THM_MAX_FILES + 2) * sizeof(char **));
 
     // add default internal
     guiThemesNames[0] = "<OPL>";
@@ -1470,7 +1469,9 @@ static void thmRebuildGuiNames(void)
     for (i = 0; i < nGuiThemes; i++)
         guiThemesNames[i + 1] = themes[guiThemes[i]].name;
 
-    guiThemesNames[nGuiThemes + 1] = NULL;
+    // the dialog may still point past the new end
+    for (i = nGuiThemes + 1; i < THM_MAX_FILES + 2; i++)
+        guiThemesNames[i] = NULL;
 }
 
 int thmAddElements(char *path, const char *separator, int forceRefresh)
@@ -1479,7 +1480,9 @@ int thmAddElements(char *path, const char *separator, int forceRefresh)
 
     result = listDir(path, separator, THM_MAX_FILES - nThemes, &thmReadEntry);
     nThemes += result;
+    guiLock();
     thmRebuildGuiNames();
+    guiUnlock();
 
     const char *temp;
     if (configGetStr(configGetByType(CONFIG_OPL), "theme", &temp)) {
@@ -1511,7 +1514,7 @@ void thmInit(void)
 void thmRemoveElements(const char *path)
 {
     char name[256] = "";
-    int i, j;
+    int i, j, dropped;
 
     if (path[0] == '\0')
         return;
@@ -1519,13 +1522,17 @@ void thmRemoveElements(const char *path)
     if (guiThemeCopy >= 0)
         snprintf(name, sizeof(name), "%s", themes[guiThemeCopy].name);
 
-    // guiThemeCopy becomes -2 if the theme in use is dropped: loaded, but its files are gone
+    // guiThemeCopy becomes -2 if the theme in use is dropped: loaded, but its files are gone. The dropped names are
+    // freed, so the list is rebuilt before the GUI thread draws it again.
+    guiLock();
     j = dropDeviceFiles(themes, nThemes, path, &guiThemeCopy);
-    if (j == nThemes)
-        return;
-
+    dropped = (j != nThemes);
     nThemes = j;
-    thmRebuildGuiNames();
+    if (dropped)
+        thmRebuildGuiNames();
+    guiUnlock();
+    if (!dropped)
+        return;
 
     if (name[0] != '\0' && thmSetGuiValue(thmFindGuiID(name), 0)) {
         for (i = 0; i < MODE_COUNT; i++)
@@ -1546,8 +1553,13 @@ const char *thmGetValue(void)
 int thmSetGuiValue(int themeID, int reload)
 {
     if (themeID != -1) {
-        int copy = themeID != 0 ? guiThemes[themeID - 1] : -1;
+        int copy;
 
+        // an id the settings dialog took from a list that has become shorter since
+        if (themeID > nGuiThemes)
+            return 0;
+
+        copy = themeID != 0 ? guiThemes[themeID - 1] : -1;
         if (guiThemeCopy != copy || reload) {
             thmLoad(copy != -1 ? themes[copy].filePath : NULL);
 
@@ -1607,4 +1619,5 @@ void thmEnd(void)
     }
 
     free(guiThemesNames);
+    guiThemesNames = NULL;
 }

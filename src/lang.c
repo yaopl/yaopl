@@ -143,15 +143,14 @@ static int lngReadEntry(int index, const char *path, const char *separator, cons
     return index;
 }
 
+// Call under guiLock(): the IO thread changes the list when a device comes or goes, and Display Settings shows it.
 static void lngRebuildLangNames(void)
 {
     int i;
 
-    if (guiLangNames)
-        free(guiLangNames);
-
-    // build the languages name list
-    guiLangNames = (char **)malloc((nLanguages + 2) * sizeof(char **));
+    // build the languages name list, allocated once at its largest: the settings dialog keeps the pointer
+    if (guiLangNames == NULL)
+        guiLangNames = (char **)malloc((MAX_LANGUAGE_FILES + 2) * sizeof(char **));
 
     // add default internal (english)
     guiLangNames[0] = internalEnglish[0];
@@ -161,7 +160,9 @@ static void lngRebuildLangNames(void)
     for (i = 0; i < nGuiLanguages; i++)
         guiLangNames[i + 1] = languages[guiLanguages[i]].name;
 
-    guiLangNames[nGuiLanguages + 1] = NULL;
+    // the dialog may still point past the new end
+    for (i = nGuiLanguages + 1; i < MAX_LANGUAGE_FILES + 2; i++)
+        guiLangNames[i] = NULL;
 }
 
 int lngAddLanguages(char *path, const char *separator, int mode)
@@ -170,7 +171,9 @@ int lngAddLanguages(char *path, const char *separator, int mode)
 
     result = listDir(path, separator, MAX_LANGUAGE_FILES - nLanguages, &lngReadEntry);
     nLanguages += result;
+    guiLock();
     lngRebuildLangNames();
+    guiUnlock();
 
     const char *temp;
     if (configGetStr(configGetByType(CONFIG_OPL), "language_text", &temp)) {
@@ -186,7 +189,7 @@ int lngAddLanguages(char *path, const char *separator, int mode)
 void lngRemoveLanguages(const char *path)
 {
     char name[256] = "";
-    int i, j;
+    int i, j, dropped;
 
     if (path[0] == '\0')
         return;
@@ -194,13 +197,17 @@ void lngRemoveLanguages(const char *path)
     if (guiLangCopy >= 0)
         snprintf(name, sizeof(name), "%s", languages[guiLangCopy].name);
 
-    // guiLangCopy becomes -2 if the language in use is dropped: loaded, but its file is gone
+    // guiLangCopy becomes -2 if the language in use is dropped: loaded, but its file is gone. The dropped names are
+    // freed, so the list is rebuilt before the GUI thread draws it again.
+    guiLock();
     j = dropDeviceFiles(languages, nLanguages, path, &guiLangCopy);
-    if (j == nLanguages)
-        return;
-
+    dropped = (j != nLanguages);
     nLanguages = j;
-    lngRebuildLangNames();
+    if (dropped)
+        lngRebuildLangNames();
+    guiUnlock();
+    if (!dropped)
+        return;
 
     if (name[0] != '\0') {
         int lost = (guiLangCopy == -2);
@@ -232,6 +239,7 @@ void lngEnd(void)
     }
 
     free(guiLangNames);
+    guiLangNames = NULL;
 
     fntEnd();
 }
@@ -239,8 +247,13 @@ void lngEnd(void)
 int lngSetGuiValue(int langID)
 {
     if (langID != -1) {
-        int copy = langID != 0 ? guiLanguages[langID - 1] : -1;
+        int copy;
 
+        // an id the settings dialog took from a list that has become shorter since
+        if (langID > nGuiLanguages)
+            return 0;
+
+        copy = langID != 0 ? guiLanguages[langID - 1] : -1;
         if (guiLangCopy != copy) {
             bgmMute();
             if (copy != -1) {
