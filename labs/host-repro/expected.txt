@@ -187,6 +187,8 @@ GameCountText count buffer         plain: GameCountText value: "1234 games"
                                    asan:  GameCountText value: "1234 games"
 image file missing                 plain: image file missing: no texture, element disabled | freed
                                    asan:  image file missing: no texture, element disabled | freed
+internal image unknown             plain: internal texture unknown: no texture, element disabled | freed
+                                   asan:  internal texture unknown: no texture, element disabled | freed
 theme without ItemsList            plain: theme without ItemsList: gamesItemsList set, appsItemsList set
                                    asan:  theme without ItemsList: gamesItemsList set, appsItemsList set
 Theme colours, internal theme      plain: text colour 11: main list 11, main background FF, apps list 11, info text 11, apps info text 11

@@ -437,7 +437,8 @@ static image_texture_t *initImageTexture(const char *themePath, config_set_t *th
 
 static image_texture_t *initImageInternalTexture(config_set_t *themeConfig, const char *name)
 {
-    image_texture_t *texture = (image_texture_t *)malloc(sizeof(image_texture_t));
+    // Zeroed: with an unknown name nothing is loaded, and freeImageTexture() then frees NULL pointers
+    image_texture_t *texture = (image_texture_t *)calloc(1, sizeof(image_texture_t));
     texture->name = NULL;
     int result;
 
