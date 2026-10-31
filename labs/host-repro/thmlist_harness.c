@@ -4,7 +4,9 @@
  * settings applied (as lngInit(), thmInit() and _loadConfig()); a USB drive or an SMB
  * share adds its THM and LNG folders (bdmNeedsUpdate(), ethInitSMB()); a USB drive
  * that goes away and an SMB reconnect call what the tree has for that, as does a device
- * whose prefix changes (the tree's sbDropThemesLanguages() where it has one).
+ * whose prefix changes (the tree's sbDropThemesLanguages() where it has one). In "dialog",
+ * Display Settings keeps the lists it was given while a USB drive comes and goes, and then
+ * applies the theme and language that were picked before.
  * Mode: thmlist-t <scenario>. Each step prints the theme list, the language list and
  * what is loaded, as name@device; "!" marks an entry or a loaded file whose device is
  * gone. */
@@ -124,6 +126,8 @@ int lngSetGuiValue(int langID);
 int lngGetGuiValue(void);
 int lngFindGuiID(const char *lang);
 char *lngGetFilePath(int langID);
+const char **thmGetGuiList(void);
+char **lngGetGuiList(void);
 
 /* the state of src/themes.c */
 static int guiThemeID = 0;
@@ -271,6 +275,11 @@ static void state(const char *step)
     printf("; ");
 }
 
+static const char *entry(const char *name)
+{
+    return name != NULL ? name : "-";
+}
+
 static void addDir(const char *dir, const char *a, const char *b, const char *c)
 {
     sim_dir_t *d = &simDirs[nSimDirs++];
@@ -381,6 +390,31 @@ int main(int argc, char **argv)
         devPrefixChanged(oldPrefix, drop);
         devFound(newPrefix, 0);
         state("prefix");
+    } else if (!strcmp(s, "dialog")) {
+        // Display Settings is open with the lists of the memory card; a USB drive with theme B and language German
+        // comes, the user picks them, the drive goes, and the dialog's OK applies the picks
+        const char **thm;
+        char **lng;
+
+        cfgTheme = "A";
+        cfgLang = "Russian";
+        addDir("mc?:OPL", "thm_A", "lang_Russian.lng", NULL);
+        addDir("mass0:THM", "thm_B", NULL, NULL);
+        addDir("mass0:LNG", "lang_German.lng", NULL, NULL);
+        start();
+        thm = thmGetGuiList();
+        lng = lngGetGuiList();
+        printf("open thm[%s] lng[%s]; ", entry(thm[1]), entry(lng[1]));
+        fflush(stdout);
+        usbFound();
+        printf("usb+ thm[%s %s] lng[%s %s]; ", entry(thm[1]), entry(thm[2]), entry(lng[1]), entry(lng[2]));
+        fflush(stdout);
+        usbGone();
+        printf("usb- thm[%s %s] lng[%s %s]; ", entry(thm[1]), entry(thm[2]), entry(lng[1]), entry(lng[2]));
+        fflush(stdout);
+        thmSetGuiValue(2, 0);
+        lngSetGuiValue(2);
+        state("OK");
     } else {
         printf("unknown scenario\n");
         return 2;

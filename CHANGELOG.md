@@ -5,6 +5,18 @@ Loader (OPL) before the fork.
 
 ## Unreleased
 
+- GUI: After a 720p, 1080i or other HD video mode, the menu no longer runs above the background music and the
+  cover loading until the next start: leaving the mode gives the menu its normal priority back. (9ab1f447)
+- GUI: The menu no longer freezes now and then when a theme or language font loads while text is drawn, for
+  example when the USB drive with the chosen theme comes up after start. (74a6607a)
+- GUI: Changing the theme or language while covers load no longer damages memory, which could crash the menu
+  later; covers asked for while the NBD server runs load afterwards instead of never. (20511b72)
+- GUI: Display Settings no longer shows or saves garbage when a device with themes or languages comes or goes
+  while it is open; a theme or language picked from a device that has gone is not applied. (a0d72638)
+- GUI: A theme image whose `default` names no built-in picture is left out instead of crashing the menu.
+  (9712bc26)
+- PADEMU: A DualShock 4 on USB gets its LED colour and vibration from the first connection in a game, not only
+  after it is plugged in again. (96f8f0c2)
 - SMB: A game over SMB whose connection broke (for example after Samba dropped an idle PS2) no longer blocks
   every later disc read and IGR: a failed read or write releases the SMB lock, and a connection closed in the
   middle of a reply ends the read instead of looping forever. IGR then gets back to YAOPL. (f2c3a673,
@@ -88,9 +100,9 @@ Loader (OPL) before the fork.
 - UDPBD: With a read-only UDPBD server, the game menu has no Rename and Delete, and *Configure VMC* shows a
   note instead of *Failed to format VMC file*; a VMC set in a game's settings is not used and the game saves
   to the real memory card, without a question at every start. (9f556b55, 11037583, 7c375a09)
-- UDPBD: A read-only UDPBD server is never written to: YAOPL does not keep its game list cache (`games.bin`)
-  there, does not offer Rename and Delete for apps in its `APPS` folder, and does not pick it when it looks
-  for a device to save its own settings on. (c92f681d, afe59be2, 760d7e3c)
+- UDPBD: Nothing but the write check's test file is written to a read-only UDPBD server: YAOPL does not keep
+  its game list cache (`games.bin`) there, does not offer Rename and Delete for apps in its `APPS` folder, and
+  does not pick it when it looks for a device to save its own settings on. (c92f681d, afe59be2, 760d7e3c)
 - In-game: IGR no longer stalls games while their pad polling pauses (loading screens, movies): it scanned the
   game's memory again every time, which left the DualShock dead or dropping out in Gran Turismo 4 over UDPBD
   until it was replugged. Gran Turismo 4 no longer needs Compatibility Mode 6 for its pad. After patching a
@@ -173,7 +185,7 @@ The first release of the fork, on top of upstream OPL Beta-2271 (b3a21997).
 - Build: The README presents YAOPL, and a new user guide, `docs/USAGE.md`, replaces upstream's documentation:
   checked against the code, with UDPBD, MMCE and the ZSO limits. FORK.md was folded into this changelog and
   `CONTRIBUTING.md`. (91fb193c, 3980a6d4)
-- Build: The user documentation is a site now, <https://belomaxorka.github.io/yaopl/>, with a page per topic:
+- Build: The user documentation is a site now, <https://yaopl.github.io/yaopl/>, with a page per topic:
   installing and launching, every menu and setting with its default, each device (USB, MX4SIO, iLink, the HDD
   as exFAT or APA, SMB with PC setup, UDPBD, MMCE), adding games, game settings, cheats, VMCs, in-game reset,
   NBD and troubleshooting, all checked against the code. It replaces `docs/USAGE.md`. (2e28eebd..30d34adc)

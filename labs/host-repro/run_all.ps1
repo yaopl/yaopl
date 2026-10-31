@@ -264,9 +264,10 @@ if (Want "text") {
 }
 
 if (Want "theme") {
-    Build theme t "src\themes.c" "initMutableText", "getGameCount", "drawGameCountText", "initGameCountText", "freeImageTexture", "initImageTexture", "validateItemsList", "validateGUIElems"
+    Build theme t "src\themes.c" "initMutableText", "getGameCount", "drawGameCountText", "initGameCountText", "freeImageTexture", "initImageTexture", "initImageInternalTexture", "validateItemsList", "validateGUIElems"
     Test "GameCountText count buffer" theme-t "gamecount"
     Test "image file missing" theme-t "image"
+    Test "internal image unknown" theme-t "internal"
     Test "theme without ItemsList" theme-t "itemslist"
 }
 
@@ -289,15 +290,15 @@ if (Want "lang") {
 if (Want "thmlist") {
     # The same theme or language on several devices, and a device that goes away
     $removeDefine = if ((Get-Content -Raw (Join-Path $Opl "src\themes.c")).Contains("thmRemoveElements(")) { "/DHAVE_REMOVE" } else { "" }
-    $thmFuncs = "thmReadEntry", "thmRebuildGuiNames", "thmAddElements", "?thmReinit", "?thmRemoveElements", "thmSetGuiValue", "thmGetGuiValue", "thmFindGuiID", "thmGetFilePath"
-    $lngFuncs = "lngReadEntry", "lngRebuildLangNames", "lngAddLanguages", "?lngRemoveLanguages", "lngSetGuiValue", "lngGetGuiValue", "lngFindGuiID", "lngGetFilePath"
+    $thmFuncs = "thmReadEntry", "thmRebuildGuiNames", "thmAddElements", "?thmReinit", "?thmRemoveElements", "thmSetGuiValue", "thmGetGuiValue", "thmFindGuiID", "thmGetFilePath", "thmGetGuiList"
+    $lngFuncs = "lngReadEntry", "lngRebuildLangNames", "lngAddLanguages", "?lngRemoveLanguages", "lngSetGuiValue", "lngGetGuiValue", "lngFindGuiID", "lngGetFilePath", "lngGetGuiList"
     # A device whose prefix changes: the tree's helper, and whether the BDM and MMCE code call it then
     if ((Get-Content -Raw (Join-Path $Opl "src\supportbase.c")).Contains("void sbDropThemesLanguages(")) { $removeDefine += " /DHAVE_SB_DROP" }
     if ((Get-Content -Raw (Join-Path $Opl "src\bdmsupport.c")).Contains("sbDropThemesLanguages(oldPrefix")) { $removeDefine += " /DHAVE_BDM_PREFIX_DROP" }
     $mmce = Join-Path $Opl "src\mmcesupport.c"
     if ((Test-Path $mmce) -and (Get-Content -Raw $mmce).Contains("sbDropThemesLanguages(oldPrefix")) { $removeDefine += " /DHAVE_MMCE_PREFIX_DROP" }
     Build thmlist t "src\themes.c" $thmFuncs -Source2 "src\lang.c" -Funcs2 $lngFuncs -Source3 "src\config.c" -Funcs3 "?configGetDeviceRank" -Source4 "src\supportbase.c" -Funcs4 "?sbDropThemesLanguages" -Source5 "src\util.c" -Funcs5 "?listDeviceFiles", "?dropDeviceFiles" -Defines $removeDefine
-    foreach ($s in "dup-mc", "dup-usb", "remove", "fallback", "shift", "smb", "prefix-bdm", "prefix-mmce") { Test "Theme/language list $s" thmlist-t $s }
+    foreach ($s in "dup-mc", "dup-usb", "remove", "fallback", "shift", "smb", "prefix-bdm", "prefix-mmce", "dialog") { Test "Theme/language list $s" thmlist-t $s }
 }
 
 if (Want "history") {
@@ -355,6 +356,11 @@ if (Want "staleid") {
 if (Want "langswitch") {
     Build langswitch t "src\lang.c" "lngFreeFromFile", "lngLoadFont", "lngLoadFromFile", "lngSetGuiValue"
     Test "language file <-> English x3" langswitch-t
+}
+
+if (Want "texcache") {
+    Build texcache t "src\texcache.c" "load_image_request_t", "cacheLoadImage", "cacheClearItem", "cacheInitCache", "cacheDestroyCache", "cacheGetTexture"
+    foreach ($c in "ok", "destroyed", "blocked") { Test "art cache $c" texcache-t $c }
 }
 
 if (Want "readfile") {

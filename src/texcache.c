@@ -17,32 +17,53 @@ typedef struct
 } load_image_request_t;
 
 // Io handled action...
+// The cache may be freed while the request waits or loads: a theme change frees the old theme's caches
+// (cacheDestroyCache(), under guiLock()) and sets req->cache to NULL. So the cache is read and written only under
+// guiLock(), and the image is loaded into a texture of the request's own.
 static void cacheLoadImage(void *data)
 {
     load_image_request_t *req = data;
+    char prefix[256], suffix[32], *folder = NULL;
+    int isPrefixRelative, result;
+    GSTEXTURE texture;
 
     // Safeguards...
-    if (!req || !req->entry || !req->cache)
+    if (!req)
         return;
 
     item_list_t *handler = req->list;
-    if (!handler)
+
+    guiLock();
+    // the cache is gone, or its entry was already reused
+    if (!handler || !req->cache || req->cacheUID != req->entry->UID) {
+        guiUnlock();
+        free(req);
         return;
+    }
+    if (req->cache->prefix) {
+        snprintf(prefix, sizeof(prefix), "%s", req->cache->prefix);
+        folder = prefix;
+    }
+    snprintf(suffix, sizeof(suffix), "%s", req->cache->suffix);
+    isPrefixRelative = req->cache->isPrefixRelative;
+    guiUnlock();
 
-    // the cache entry was already reused!
-    if (req->cacheUID != req->entry->UID)
-        return;
+    memset(&texture, 0, sizeof(texture));
+    result = handler->itemGetImage(handler, folder, isPrefixRelative, req->value, suffix, &texture, GS_PSM_CT24);
 
-    // seems okay. we can proceed
-    GSTEXTURE *texture = &req->entry->texture;
-    texFree(texture);
-
-    if (handler->itemGetImage(handler, req->cache->prefix, req->cache->isPrefixRelative, req->value, req->cache->suffix, texture, GS_PSM_CT24) < 0)
-        req->entry->lastUsed = 0;
-    else
-        req->entry->lastUsed = guiFrameId;
-
-    req->entry->qr = NULL;
+    guiLock();
+    if (req->cache && req->cacheUID == req->entry->UID) {
+        // seems okay. we can proceed
+        texFree(&req->entry->texture);
+        req->entry->texture = texture;
+        if (result < 0)
+            req->entry->lastUsed = 0;
+        else
+            req->entry->lastUsed = guiFrameId;
+        req->entry->qr = NULL;
+    } else
+        texFree(&texture);
+    guiUnlock();
 
     free(req);
 }
@@ -107,6 +128,9 @@ void cacheDestroyCache(image_cache_t *cache)
 {
     int i;
     for (i = 0; i < cache->count; ++i) {
+        // A request still queued or loading is the IO thread's: it frees it, seeing the cache is gone
+        if (cache->content[i].qr)
+            ((load_image_request_t *)cache->content[i].qr)->cache = NULL;
         cacheClearItem(&cache->content[i], 1);
     }
 
@@ -168,7 +192,12 @@ GSTEXTURE *cacheGetTexture(image_cache_t *cache, item_list_t *list, int *cacheId
 
         *UID = cache->nextUID++;
 
-        ioPutRequest(IO_CACHE_LOAD_ART, req);
+        // Refused while the IO thread is blocked: forget the request, so the image is asked for again later
+        if (ioPutRequest(IO_CACHE_LOAD_ART, req) != 0) {
+            cacheClearItem(oldestEntry, 0);
+            *cacheId = -1;
+            free(req);
+        }
     }
 
     return NULL;

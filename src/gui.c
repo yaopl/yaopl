@@ -716,9 +716,10 @@ reselect_video_mode:
         // Only a theme or language the user picks replaces the one in the settings, which may be on a
         // device that is not found yet
         config_set_t *configOPL = configGetByType(CONFIG_OPL);
-        if (previousTheme != themeID)
+        // (the lists may have become shorter while the dialog was open: a device went away)
+        if (previousTheme != themeID && thmGetGuiList()[themeID] != NULL)
             configSetStr(configOPL, CONFIG_OPL_THEME, thmGetGuiList()[themeID]);
-        if (previousLang != langID)
+        if (previousLang != langID && lngGetGuiList()[langID] != NULL)
             configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetGuiList()[langID]);
 
         applyConfig(themeID, langID, 1);

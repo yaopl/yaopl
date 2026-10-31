@@ -187,6 +187,8 @@ GameCountText count buffer         plain: GameCountText value: "1234 games"
                                    asan:  GameCountText value: "1234 games"
 image file missing                 plain: image file missing: no texture, element disabled | freed
                                    asan:  image file missing: no texture, element disabled | freed
+internal image unknown             plain: internal texture unknown: no texture, element disabled | freed
+                                   asan:  internal texture unknown: no texture, element disabled | freed
 theme without ItemsList            plain: theme without ItemsList: gamesItemsList set, appsItemsList set
                                    asan:  theme without ItemsList: gamesItemsList set, appsItemsList set
 Theme colours, internal theme      plain: text colour 11: main list 11, main background FF, apps list 11, info text 11, apps info text 11
@@ -227,6 +229,8 @@ Theme/language list prefix-bdm     plain: dev+ thm[A]=<OPL> lng[]=English; prefi
                                    asan:  dev+ thm[A]=<OPL> lng[]=English; prefix thm[B]=B@mass0 lng[German]=German@mass0; 
 Theme/language list prefix-mmce    plain: dev+ thm[A]=<OPL> lng[]=English; prefix thm[B]=B@mmce1 lng[German]=German@mmce1; 
                                    asan:  dev+ thm[A]=<OPL> lng[]=English; prefix thm[B]=B@mmce1 lng[German]=German@mmce1; 
+Theme/language list dialog         plain: open thm[A] lng[Russian]; usb+ thm[A B] lng[Russian German]; usb- thm[A -] lng[Russian -]; OK thm[A]=A@mc? lng[Russian]=Russian@mc?; 
+                                   asan:  open thm[A] lng[Russian]; usb+ thm[A B] lng[Russian German]; usb- thm[A -] lng[Russian -]; OK thm[A]=A@mc? lng[Russian]=Russian@mc?; 
 GetBootFilename                    plain: cdrom0:\SLUS_200.62;1: record "SLUS_200.62" (11 characters) | cdrom0:\DATA\ABCDEFGHIJKLMNOPQRST.ELF;1: record "ABCDEFGHIJKLMNOP" (16 characters)
                                    asan:  cdrom0:\SLUS_200.62;1: record "SLUS_200.62" (11 characters) | cdrom0:\DATA\ABCDEFGHIJKLMNOPQRST.ELF;1: record "ABCDEFGHIJKLMNOP" (16 characters)
 PrepareGSM $GSMVMode=0             plain: $GSMVMode=0: mode used 2, interlace 1, ffmd 0, display 001BF9FF0182E2BC, cmdline "1 2 0 7874698008519356 56154283650848769 1 0 0 0 0 0"
@@ -287,6 +291,12 @@ game settings, list removed        plain: 0 games: settings of game 40 not loade
                                    asan:  0 games: settings of game 40 not loaded
 language file <-> English x3       plain: 3 times file -> English: 0 allocations left, strings English
                                    asan:  3 times file -> English: 0 allocations left, strings English
+art cache ok                       plain: loaded ART/SLUS_123.45_COV | cover shown
+                                   asan:  loaded ART/SLUS_123.45_COV | cover shown
+art cache destroyed                plain: request on the freed cache: done
+                                   asan:  request on the freed cache: done
+art cache blocked                  plain: loaded ART/SLUS_123.45_COV | cover shown
+                                   asan:  loaded ART/SLUS_123.45_COV | cover shown
 readFile ok                        plain: ok: buffer returned, size 4096, descriptors left open 0
                                    asan:  ok: buffer returned, size 4096, descriptors left open 0
 readFile nomem                     plain: nomem: buffer NULL, size 0, descriptors left open 0

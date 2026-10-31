@@ -65,6 +65,7 @@ static char **lang_strs = internalEnglish;
 static int nValidEntries = LANG_STR_COUNT;
 static language_t languages[1] = {{"mass0:LNG/lang_Russian.lng", "Russian"}};
 static int guiLanguages[1] = {0};
+static int nGuiLanguages = 1;
 static int guiLangCopy = -1;
 
 #define malloc harness_malloc
