@@ -264,9 +264,10 @@ if (Want "text") {
 }
 
 if (Want "theme") {
-    Build theme t "src\themes.c" "initMutableText", "getGameCount", "drawGameCountText", "initGameCountText", "freeImageTexture", "initImageTexture", "validateItemsList", "validateGUIElems"
+    Build theme t "src\themes.c" "initMutableText", "getGameCount", "drawGameCountText", "initGameCountText", "freeImageTexture", "initImageTexture", "initImageInternalTexture", "validateItemsList", "validateGUIElems"
     Test "GameCountText count buffer" theme-t "gamecount"
     Test "image file missing" theme-t "image"
+    Test "internal image unknown" theme-t "internal"
     Test "theme without ItemsList" theme-t "itemslist"
 }
 

@@ -1,7 +1,7 @@
 /* Host harness for theme elements of src/themes.c: the GameCountText element,
  * image textures and the items list. configGetInt() and configGetStr() find
  * nothing, as with a theme that sets no property; texDiscoverLoad() finds no
- * file. Modes: theme-t gamecount | image | itemslist */
+ * file and no internal texture has the name asked for. Modes: theme-t gamecount | image | internal | itemslist */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -195,6 +195,20 @@ int main(int argc, char **argv)
     if (argc == 2 && strcmp(argv[1], "image") == 0) {
         image_texture_t *texture = initImageTexture("mass:/THM/thm_x/", NULL, "bg", "missing", 0);
         printf("image file missing: %s\n", texture ? "texture kept, its memory pointer never set" : "no texture, element disabled");
+        fflush(stdout);
+        if (texture)
+            freeImageTexture(texture);
+        printf("freed\n");
+        return 0;
+    }
+    if (argc == 2 && strcmp(argv[1], "internal") == 0) {
+        // Leave a used block of the texture's size for malloc() to hand out again, as the menu's heap does
+        void *used = malloc(sizeof(image_texture_t));
+        memset(used, 0xAB, sizeof(image_texture_t));
+        free(used);
+
+        image_texture_t *texture = initImageInternalTexture(NULL, "nosuch");
+        printf("internal texture unknown: %s\n", texture ? "texture kept" : "no texture, element disabled");
         fflush(stdout);
         if (texture)
             freeImageTexture(texture);
