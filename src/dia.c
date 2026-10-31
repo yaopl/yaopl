@@ -66,12 +66,8 @@ int diaShowKeyb(char *text, int maxLen, int hide_text, const char *title)
         'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', '~', '.'};
     const char *keyb = keyb0;
 
-    char *commands[KEYB_HEIGHT] = {_l(_STR_BACKSPACE), _l(_STR_SPACE), _l(_STR_ENTER), _l(_STR_MODE)};
+    char *commands[KEYB_HEIGHT];
     GSTEXTURE *cmdicons[KEYB_HEIGHT];
-    cmdicons[0] = thmGetTexture(SQUARE_ICON);
-    cmdicons[1] = thmGetTexture(TRIANGLE_ICON);
-    cmdicons[2] = thmGetTexture(START_ICON);
-    cmdicons[3] = thmGetTexture(SELECT_ICON);
 
     rmGetScreenExtents(&screenWidth, &screenHeight);
 
@@ -86,6 +82,18 @@ int diaShowKeyb(char *text, int maxLen, int hide_text, const char *title)
 
     while (1) {
         readPads();
+
+        // The IO thread frees a theme or language it replaces under the GUI lock: draw under it, and look the
+        // command texts and icons up again in every frame
+        guiLock();
+        commands[0] = _l(_STR_BACKSPACE);
+        commands[1] = _l(_STR_SPACE);
+        commands[2] = _l(_STR_ENTER);
+        commands[3] = _l(_STR_MODE);
+        cmdicons[0] = thmGetTexture(SQUARE_ICON);
+        cmdicons[1] = thmGetTexture(TRIANGLE_ICON);
+        cmdicons[2] = thmGetTexture(START_ICON);
+        cmdicons[3] = thmGetTexture(SELECT_ICON);
 
         rmStartFrame();
         guiDrawBGPlasma();
@@ -132,6 +140,7 @@ int diaShowKeyb(char *text, int maxLen, int hide_text, const char *title)
         guiDrawIconAndText(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, _STR_CANCEL, gTheme->fonts[0], 500, 417, gTheme->selTextColor);
 
         rmEndFrame();
+        guiUnlock();
 
         if (getKey(KEY_LEFT)) {
             sfxPlay(SFX_CURSOR);
@@ -281,6 +290,7 @@ static int diaShowColSel(unsigned char *r, unsigned char *g, unsigned char *b)
     while (1) {
         readPads();
 
+        guiLock(); // as in diaShowKeyb()
         rmStartFrame();
         guiDrawBGPlasma();
         rmDrawRect(0, 0, screenWidth, screenHeight, gColDarker);
@@ -327,6 +337,7 @@ static int diaShowColSel(unsigned char *r, unsigned char *g, unsigned char *b)
         guiDrawIconAndText(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, _STR_CANCEL, gTheme->fonts[0], 500, 417, gTheme->selTextColor);
 
         rmEndFrame();
+        guiUnlock();
 
         if (getKey(KEY_LEFT)) {
             if (col[selc] > 0) {
@@ -885,9 +896,11 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
     // okay, we have the first selectable item
     // we can proceed with rendering etc. etc.
     while (1) {
+        guiLock(); // as in diaShowKeyb()
         rmStartFrame();
         diaRenderUI(ui, inMenu, cur, haveFocus);
         rmEndFrame();
+        guiUnlock();
 
         readPads();
 
