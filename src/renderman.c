@@ -22,6 +22,9 @@ static short int vmode = -1;
 static u8 hires = 0;
 static u8 guiWakeupCount;
 static int vsync_id = -1;
+// The thread gsKit_hires_init_screen() raised to priority 2 and the priority it had before (-1: none)
+static int hiresThread = -1;
+static int hiresPriority = -1;
 
 #define NUM_RM_VMODES 14
 #define RM_VMODE_AUTO 0
@@ -220,6 +223,12 @@ int rmSetMode(int force)
         gsGlobal->OffsetY = ((4096 - gsGlobal->Height) / 2) * 16;
 
         if (hires) {
+            // gsKit_hires_init_screen() raises its caller to priority 2 and nothing lowers it again: remember the
+            // thread and its priority for rmEnd(). Usually the GUI thread, but applyConfig() can run elsewhere.
+            ee_thread_status_t status;
+
+            hiresThread = GetThreadId();
+            hiresPriority = (ReferThreadStatus(hiresThread, &status) >= 0) ? status.current_priority : -1;
             gsKit_hires_init_screen(gsGlobal, rm_mode_table[vmode].passes);
         } else {
             gsKit_init_screen(gsGlobal);
@@ -265,6 +274,10 @@ void rmEnd(void)
 {
     if (hires) {
         gsKit_hires_deinit_global(gsGlobal);
+        if (hiresThread >= 0 && hiresPriority >= 0)
+            ChangeThreadPriority(hiresThread, hiresPriority);
+        hiresThread = -1;
+        hiresPriority = -1;
     } else {
         gsKit_deinit_global(gsGlobal);
         gsKit_remove_vsync_handler(vsync_id);
