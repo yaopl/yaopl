@@ -234,7 +234,8 @@ jobs:
       contents: write
     concurrency:
       group: release-${{ github.ref }}
-    if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/yaopl-v') || github.ref == 'refs/heads/master'
+    # A manual run with make_args builds a variant (an A/B build): it is never published.
+    if: (startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/yaopl-v') || github.ref == 'refs/heads/master') && (github.event_name != 'workflow_dispatch' || inputs.make_args == '')
     env:
       USERNAME: ${{ secrets.USERNAME }}
       PASSWORD: ${{ secrets.PASSWORD }}
