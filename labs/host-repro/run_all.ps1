@@ -357,6 +357,10 @@ if (Want "langswitch") {
     Build langswitch t "src\lang.c" "lngFreeFromFile", "lngLoadFont", "lngLoadFromFile", "lngSetGuiValue"
     Test "language file <-> English x3" langswitch-t
 }
+if (Want "dialock") {
+    Build dialock t "src\dia.c" "UI_SPACING_H", "DIA_SCROLL_SPEED", "KEYB_MODE", "KEYB_WIDTH", "KEYB_HEIGHT", "KEYB_ITEMS", "diaDrawBoundingBox", "diaShowKeyb", "diaShowColSel", "diaExecuteDialog"
+    foreach ($c in "dialog", "keyboard", "colour") { Test "$c frames, IO swaps theme" dialock-t $c }
+}
 
 if (Want "apps") {
     Build memleak apps "src\appsupport.c" "?appFreeLegacyConfig", "appNeedsUpdate", "addAppsLegacyList", "appUpdateItemList", "appFreeList", "appLaunchItem" -Defines "/DAPPS"

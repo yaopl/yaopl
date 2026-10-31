@@ -11,6 +11,9 @@ Loader (OPL) before the fork.
   comes or goes or another page loads. (7dd0e924, e53856db)
 - GUI: A game list that does not fit in memory no longer loses the memory of every game found on each rescan.
   (33cbfb42)
+- GUI: The settings dialogs, the on-screen keyboard and the colour picker no longer draw a theme or language
+  that was replaced while they were open (a USB stick, SMB share or HDD with the configured theme or language
+  coming up, or the stick with the language pulled): the menu could show garbled text or freeze. (ce6323f5)
 - GUI: After a 720p, 1080i or other HD video mode, the menu no longer runs above the background music and the
   cover loading until the next start: leaving the mode gives the menu its normal priority back. (9ab1f447)
 - GUI: The menu no longer freezes now and then when a theme or language font loads while text is drawn, for
