@@ -145,7 +145,9 @@ static void _menuLoadConfig()
     WaitSema(menuSemaId);
     if (!itemConfig) {
         item_list_t *list = selected_item->item->userdata;
-        itemConfig = list->itemGetConfig(list, itemConfigId);
+        // A list update queued before this load may have reread the list: the game can be gone
+        if (itemConfigId >= 0 && itemConfigId < list->itemGetCount(list))
+            itemConfig = list->itemGetConfig(list, itemConfigId);
     }
     actionStatus = 0;
     SignalSema(menuSemaId);

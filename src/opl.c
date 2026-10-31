@@ -280,7 +280,8 @@ static void itemExecSelect(struct menu_item *curMenu)
         if (support->enabled) {
             if (curMenu->current) {
                 config_set_t *configSet = menuLoadConfig();
-                if (menuCheckGameParentalLock(configSet) == 0)
+                // No settings: the game left the list while they were loaded, and the menu is being rebuilt
+                if (configSet != NULL && menuCheckGameParentalLock(configSet) == 0)
                     support->itemLaunch(support, curMenu->current->item.id, configSet);
             }
         } else {
