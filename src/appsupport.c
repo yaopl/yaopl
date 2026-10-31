@@ -380,7 +380,7 @@ static void appLaunchItem(item_list_t *itemList, int id, config_set_t *configSet
 {
     int fd;
     char filename[256];
-    const char *argv1;
+    char argv1[CONFIG_KEY_VALUE_LEN];
 
     // Retrieve configuration set by appGetConfig()
     configGetStrCopy(configSet, CONFIG_ITEM_STARTUP, filename, sizeof(filename));
@@ -426,8 +426,9 @@ static void appLaunchItem(item_list_t *itemList, int id, config_set_t *configSet
         if (mode == HDD_MODE)
             snprintf(partition, sizeof(partition), "%s:", gOPLPart);
 
-        if (configGetStr(configSet, CONFIG_ITEM_ALTSTARTUP, &argv1) != 0) {
-            argv[0] = (char *)argv1;
+        // A copy: deinit() frees configSet (menuEnd())
+        if (configGetStrCopy(configSet, CONFIG_ITEM_ALTSTARTUP, argv1, sizeof(argv1)) != 0) {
+            argv[0] = argv1;
             argc = 1;
         }
 
