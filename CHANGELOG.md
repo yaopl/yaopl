@@ -5,6 +5,8 @@ Loader (OPL) before the fork.
 
 ## Unreleased
 
+- GUI: Exiting, powering off or starting a game no longer hangs for good when the menu still has work queued,
+  such as a cover loading over the network or an SMB start without a cable. (b5394714)
 - GUI: A theme that does not ship every button icon of the hint bar no longer freezes the menu; such a hint
   shows its text without the icon. (85500f43)
 - In-game: With an HD Pro adaptor, a failed disc transfer no longer leaves the drive locked, which hung the
