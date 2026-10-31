@@ -358,6 +358,17 @@ if (Want "langswitch") {
     Test "language file <-> English x3" langswitch-t
 }
 
+if (Want "apps") {
+    Build memleak apps "src\appsupport.c" "appNeedsUpdate", "addAppsLegacyList", "appUpdateItemList", "appFreeList", "appLaunchItem" -Defines "/DAPPS"
+    Test "apps list refresh x3 (20 apps)" memleak-apps "refresh", "3", "20"
+    Test "app launch with an argument" memleak-apps "launch"
+}
+
+if (Want "sboom") {
+    Build memleak sb "src\supportbase.c" "game_list_t", "sbReadList" -Defines "/DSB"
+    Test "sbReadList, list allocation fails" memleak-sb "300"
+}
+
 if (Want "texcache") {
     Build texcache t "src\texcache.c" "load_image_request_t", "cacheLoadImage", "cacheClearItem", "cacheInitCache", "cacheDestroyCache", "cacheGetTexture"
     foreach ($c in "ok", "destroyed", "blocked") { Test "art cache $c" texcache-t $c }
