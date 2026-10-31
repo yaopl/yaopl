@@ -44,11 +44,32 @@ static int harness_snprintf(char *s, size_t n, const char *fmt, ...)
 }
 #define snprintf harness_snprintf
 
+// With a second argument "notogg" the file opens, but vorbisfile does not take it (as for a bgm.ogg that is
+// not an Ogg stream); vorbisfile then leaves the file to the caller to close.
+static int fileExists, filesOpen;
+static FILE *harness_fopen(const char *path, const char *mode)
+{
+    if (!fileExists)
+        return NULL;
+    filesOpen++;
+    return (FILE *)&filesOpen;
+}
+static int harness_fclose(FILE *f)
+{
+    filesOpen--;
+    return 0;
+}
+#define fopen  harness_fopen
+#define fclose harness_fclose
+
 #include "bgm_extracted.c"
 
 int main(int argc, char **argv)
 {
     strncpy(gDefaultBGMPath, argc > 1 ? argv[1] : "mass:/bgm.ogg", sizeof(gDefaultBGMPath) - 1);
+    fileExists = argc > 2 && !strcmp(argv[2], "notogg");
     printf("bgmLoad = %d\n", bgmLoad());
+    if (fileExists)
+        printf("files left open: %d\n", filesOpen);
     return 0;
 }

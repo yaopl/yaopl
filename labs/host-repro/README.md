@@ -68,7 +68,11 @@ regenerate the file from a run on this tree:
 | `pad` | `readPads()` | the button repeat countdown jumps by 29 s at the tick counter wrap |
 | `genvmc` | `mc_writecluster()` | a failed write leaves the abort semaphore taken |
 | `atad` | in-game `ata_device_sector_io_internal()` | an LBA48 transfer of 65536 sectors or more loops forever, issuing 0-sector commands |
-| `bgm` | `bgmLoad()` | the default BGM path is the format string |
+| `bgm` | `bgmLoad()` | the default BGM path is the format string; a `bgm.ogg` that is not an Ogg stream is left open |
+| `guiops` | `src/gui.c` `guiDeferUpdate()`, `guiHandleDeferredOps()` | the IO thread, let in when the GUI thread gives the list back, appends to it, and the GUI thread then clears its end: the next append writes through NULL |
+| `staleid` | `src/menusys.c` `_menuLoadConfig()` with `bdmGetConfig()` and `sbPopulateConfig()` | the settings of the highlighted game are loaded after its list was reread: past the end of a shorter list, or from NULL when the device is gone |
+| `langswitch` | `src/lang.c` `lngSetGuiValue()`, `lngLoadFromFile()` | switching from a language file to English leaves all its strings allocated |
+| `readfile` | `src/util.c` `readFile()` | a failed allocation leaves the file open; a short read returns memory that was never read into |
 | `about` | `src/gui.c` `guiShowAbout()` | the version and the build options are cut to 39 characters: the last character of the commit on upstream, a third of a YAOPL nightly's version |
 | `udpbdro` | `src/bdmsupport.c` `bdmCheckWritable()`, `bdmGetConfig()` with `src/supportbase.c` `sbPopulateConfig()` | none (upstream has no UDPBD); on YAOPL before the fix the settings of a game on a UDPBD server that drops what is written (udpbd-vexfat) are "saved" there and lost; the check also covers where they are read from and saved after the fix; with OPL's settings in the root of a USB drive that has no `CFG` folder there, saving them fails (`drop-usbhome`) |
 
