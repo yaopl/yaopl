@@ -291,8 +291,8 @@ game settings, list removed        plain: 0 games: settings of game 40 not loade
                                    asan:  0 games: settings of game 40 not loaded
 language file <-> English x3       plain: 3 times file -> English: 0 allocations left, strings English
                                    asan:  3 times file -> English: 0 allocations left, strings English
-apps list refresh x3 (20 apps)     plain: 20 apps listed, 9 allocations live (the list and its config: 3)
-                                   asan:  20 apps listed, 9 allocations live (the list and its config: 3)
+apps list refresh x3 (20 apps)     plain: 20 apps listed, 3 allocations live (the list and its config: 3)
+                                   asan:  20 apps listed, 3 allocations live (the list and its config: 3)
 app launch with an argument        plain: mass0:APPS/x/BOOT.ELF, argc 1, argument "XXXXXXXX"
                                    asan:  ASAN heap-use-after-free in LoadELFFromFileWithPartition
 sbReadList, list allocation fails  plain: 0 games listed, 300 scanned nodes left

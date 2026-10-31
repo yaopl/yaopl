@@ -97,11 +97,20 @@ static char *appGetBoot(char *device, int max, char *path)
     return path;
 }
 
+static void appFreeLegacyConfig(void)
+{
+    if (configApps != NULL) {
+        configFree(configApps);
+        configApps = NULL;
+    }
+}
+
 void appInit(item_list_t *itemList)
 {
     LOG("APPSUPPORT Init\n");
     appForceUpdate = 1;
     configGetInt(configGetByType(CONFIG_OPL), "app_frames_delay", &appItemList.delay);
+    appFreeLegacyConfig();
     configApps = oplGetLegacyAppsConfig();
     appsList = NULL;
     appItemList.enabled = 1;
@@ -126,8 +135,10 @@ static int appNeedsUpdate(item_list_t *itemList)
     if (oplShouldAppsUpdate())
         update = 1;
 
-    if (update)
+    if (update) {
+        appFreeLegacyConfig();
         configApps = oplGetLegacyAppsConfig();
+    }
 
     return update;
 }
@@ -494,6 +505,7 @@ static void appCleanUp(item_list_t *itemList, int exception)
         LOG("APPSUPPORT CleanUp\n");
 
         appFreeList();
+        appFreeLegacyConfig();
     }
 }
 
@@ -504,6 +516,7 @@ static void appShutdown(item_list_t *itemList)
         LOG("APPSUPPORT Shutdown\n");
 
         appFreeList();
+        appFreeLegacyConfig();
     }
 }
 

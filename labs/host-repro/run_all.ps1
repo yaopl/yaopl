@@ -359,7 +359,7 @@ if (Want "langswitch") {
 }
 
 if (Want "apps") {
-    Build memleak apps "src\appsupport.c" "appNeedsUpdate", "addAppsLegacyList", "appUpdateItemList", "appFreeList", "appLaunchItem" -Defines "/DAPPS"
+    Build memleak apps "src\appsupport.c" "?appFreeLegacyConfig", "appNeedsUpdate", "addAppsLegacyList", "appUpdateItemList", "appFreeList", "appLaunchItem" -Defines "/DAPPS"
     Test "apps list refresh x3 (20 apps)" memleak-apps "refresh", "3", "20"
     Test "app launch with an argument" memleak-apps "launch"
 }
