@@ -253,7 +253,12 @@ int lngSetGuiValue(int langID)
                     return 1;
                 }
             }
+            // The strings of a language file go with it (lngFreeFromFile() keeps internal English). The IO thread
+            // gets here too, when the language's file goes away: not while the GUI thread draws them.
+            guiLock();
+            lngFreeFromFile(lang_strs);
             lang_strs = internalEnglish;
+            guiUnlock();
             guiLangID = 0;
             guiLangCopy = -1;
             // lang switched back to internalEnglish, reload default font
