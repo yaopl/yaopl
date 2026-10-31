@@ -5,6 +5,7 @@
 #include "include/ioman.h"
 #include "include/themes.h"
 #include "include/sound.h"
+#include "include/gui.h"
 
 static int guiLangID = 0;
 static char **lang_strs = internalEnglish;
@@ -80,8 +81,12 @@ static int lngLoadFromFile(char *path, char *name)
             newL[strId] = internalEnglish[strId];
             strId++;
         }
+        // lngAddLanguages() runs in the IO thread when a device with languages is found: free the old strings
+        // only while the GUI thread is not drawing them.
+        guiLock();
         lang_strs = newL;
         lngFreeFromFile(curL);
+        guiUnlock();
 
         // remember how many entries were read from the file (for the free later)
         nValidEntries = newEntries;
@@ -248,7 +253,12 @@ int lngSetGuiValue(int langID)
                     return 1;
                 }
             }
+            // The strings of a language file go with it (lngFreeFromFile() keeps internal English). The IO thread
+            // gets here too, when the language's file goes away: not while the GUI thread draws them.
+            guiLock();
+            lngFreeFromFile(lang_strs);
             lang_strs = internalEnglish;
+            guiUnlock();
             guiLangID = 0;
             guiLangCopy = -1;
             // lang switched back to internalEnglish, reload default font

@@ -1443,8 +1443,12 @@ static void thmLoad(const char *themePath)
         for (i = ELF_FORMAT; i <= VMODE_PAL; i++)
             thmLoadResource(&newT->textures[i], i, NULL, GS_PSM_CT32, 1);
 
+    // thmAddElements() loads the theme in the IO thread when a device with themes is found: swap and free the old
+    // theme only while the GUI thread is not drawing it.
+    guiLock();
     gTheme = newT;
     thmFree(curT);
+    guiUnlock();
 }
 
 static void thmRebuildGuiNames(void)

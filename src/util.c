@@ -208,11 +208,15 @@ void *readFile(char *path, int align, int *size)
         if (!buffer) {
             LOG("UTIL ReadFile: Failed allocation of %d bytes", realSize);
             *size = 0;
-        } else {
-            read(fd, buffer, realSize);
-            close(fd);
+        } else if (read(fd, buffer, realSize) != (int)realSize) {
+            // A short read (e.g. the device was removed) would hand on memory that was never read into
+            LOG("UTIL ReadFile: Failed to read %s\n", path);
+            free(buffer);
+            buffer = NULL;
+            *size = 0;
+        } else
             *size = realSize;
-        }
+        close(fd);
     }
     return buffer;
 }

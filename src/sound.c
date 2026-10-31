@@ -348,6 +348,8 @@ static int bgmLoad(void)
 
     if (ov_open_callbacks(bgmFile, vorbisFile, NULL, 0, OV_CALLBACKS_DEFAULT) < 0) {
         LOG("BGM: Input does not appear to be an Ogg bitstream.\n");
+        // Vorbisfile closes the file only once it has taken it
+        fclose(bgmFile);
         return -ENOENT;
     }
 

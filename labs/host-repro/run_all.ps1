@@ -329,6 +329,27 @@ if (Want "atad") {
 if (Want "bgm") {
     Build bgm t "src\sound.c" "bgmLoad"
     Test "bgmLoad default_bgm_path" bgm-t "mass:/MUSIC/100%s.ogg"
+    Test "bgmLoad file not Ogg" bgm-t "mass:/bgm.ogg", "notogg"
+}
+
+if (Want "guiops") {
+    Build guiops t "src\gui.c" "guiDeferUpdate", "guiHandleDeferredOps"
+    Test "gui deferred ops, IO waiting" guiops-t
+}
+
+if (Want "staleid") {
+    Build staleid t "src\menusys.c" "_menuLoadConfig" -Source2 "src\bdmsupport.c" -Funcs2 "bdmGetConfig" -Source3 "src\supportbase.c" -Funcs3 "sbPopulateConfig"
+    foreach ($c in "same", "shorter", "removed") { Test "game settings, list $c" staleid-t $c }
+}
+
+if (Want "langswitch") {
+    Build langswitch t "src\lang.c" "lngFreeFromFile", "lngLoadFont", "lngLoadFromFile", "lngSetGuiValue"
+    Test "language file <-> English x3" langswitch-t
+}
+
+if (Want "readfile") {
+    Build readfile t "src\util.c" "readFile"
+    foreach ($c in "ok", "nomem", "short") { Test "readFile $c" readfile-t $c }
 }
 
 if (Want "about") {

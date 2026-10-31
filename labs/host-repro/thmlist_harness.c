@@ -92,6 +92,9 @@ static void thmSetColors(theme_t *theme) {}
 static void bgmMute(void) {}
 static void bgmUnMute(void) {}
 static int fntLoadDefault(const char *path) { return 0; }
+static void guiLock(void) {}
+static void guiUnlock(void) {}
+static void lngFreeFromFile(char **strs) {} // the strings are not read from files here
 static int lngLoadFromFile(char *path, char *name)
 {
     loadedLng = path;

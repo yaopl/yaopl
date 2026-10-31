@@ -257,6 +257,24 @@ atad LBA28 sectors 257             plain: 257 sectors: 2 commands (first 256, la
                                    asan:  257 sectors: 2 commands (first 256, last 1 sectors), 257 transferred, res 0
 bgmLoad default_bgm_path           plain: format string = "%s" | bgmLoad = -2
                                    asan:  format string = "%s" | bgmLoad = -2
+bgmLoad file not Ogg               plain: format string = "%s" | bgmLoad = -2 | files left open: 0
+                                   asan:  format string = "%s" | bgmLoad = -2 | files left open: 0
+gui deferred ops, IO waiting       plain: after the drain: list not empty, end set | next append ok, 3 of 3 operations run
+                                   asan:  after the drain: list not empty, end set | next append ok, 3 of 3 operations run
+game settings, list same           plain: 50 games: settings of game 40 loaded
+                                   asan:  50 games: settings of game 40 loaded
+game settings, list shorter        plain: 10 games: settings of game 40 not loaded
+                                   asan:  10 games: settings of game 40 not loaded
+game settings, list removed        plain: 0 games: settings of game 40 not loaded
+                                   asan:  0 games: settings of game 40 not loaded
+language file <-> English x3       plain: 3 times file -> English: 0 allocations left, strings English
+                                   asan:  3 times file -> English: 0 allocations left, strings English
+readFile ok                        plain: ok: buffer returned, size 4096, descriptors left open 0
+                                   asan:  ok: buffer returned, size 4096, descriptors left open 0
+readFile nomem                     plain: nomem: buffer NULL, size 0, descriptors left open 0
+                                   asan:  nomem: buffer NULL, size 0, descriptors left open 0
+readFile short                     plain: short: buffer NULL, size 0, descriptors left open 0
+                                   asan:  short: buffer NULL, size 0, descriptors left open 0
 About page nightly                 plain: title full 48 of 48 chars: "Open PS2 Loader v2.0.0-nightly.171-d24b701-yaopl" | details full 41 of 41 chars: "GSM 0.40 - UDMA+ - RTL - IGS 0.1 - PADEMU"
                                    asan:  title full 48 of 48 chars: "Open PS2 Loader v2.0.0-nightly.171-d24b701-yaopl" | details full 41 of 41 chars: "GSM 0.40 - UDMA+ - RTL - IGS 0.1 - PADEMU"
 About page nosio2man               plain: title full 58 of 58 chars: "Open PS2 Loader v2.0.0-nightly.171-d24b701-yaopl-nosio2man" | details full 25 of 25 chars: "GSM 0.40 - UDMA+ - PADEMU"
