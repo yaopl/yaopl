@@ -303,6 +303,10 @@ art cache destroyed                plain: request on the freed cache: done
                                    asan:  request on the freed cache: done
 art cache blocked                  plain: loaded ART/SLUS_123.45_COV | cover shown
                                    asan:  loaded ART/SLUS_123.45_COV | cover shown
+theme swap, more art caches        plain: frame after the swap drawn, 40 art requests
+                                   asan:  frame after the swap drawn, 40 art requests
+theme swap, fewer art caches       plain: frame after the swap drawn, 34 art requests
+                                   asan:  frame after the swap drawn, 34 art requests
 readFile ok                        plain: ok: buffer returned, size 4096, descriptors left open 0
                                    asan:  ok: buffer returned, size 4096, descriptors left open 0
 readFile nomem                     plain: nomem: buffer NULL, size 0, descriptors left open 0

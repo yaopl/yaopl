@@ -1445,9 +1445,10 @@ static void thmLoad(const char *themePath)
             thmLoadResource(&newT->textures[i], i, NULL, GS_PSM_CT32, 1);
 
     // thmAddElements() loads the theme in the IO thread when a device with themes is found: swap and free the old
-    // theme only while the GUI thread is not drawing it.
+    // theme only while the GUI thread is not drawing it, and size the games' art cache ids for the new one.
     guiLock();
     gTheme = newT;
+    menuRebuildCaches();
     thmFree(curT);
     guiUnlock();
 }
