@@ -553,6 +553,7 @@ int ds34usb_init(u8 pads, u8 options)
         ds34pad[pad].data_pending = 0;
         ds34pad[pad].controlEndp = -1;
         ds34pad[pad].interruptEndp = -1;
+        ds34pad[pad].outEndp = -1;
         ds34pad[pad].enabled = (pads >> pad) & 1;
         ds34pad[pad].type = 0;
 
