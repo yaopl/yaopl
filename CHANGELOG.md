@@ -5,6 +5,9 @@ Loader (OPL) before the fork.
 
 ## Unreleased
 
+- GUI: The menu no longer freezes now and then right after start, when the games of a USB device appear, or
+  when a device with themes or languages is connected; it happened most with large themes and a DualShock 3.
+  (b45a592d)
 - Settings: A save of the settings to a USB drive that has none yet no longer leaves an empty settings file
   there when the save fails; the next start used it and started with the defaults instead of the memory card's
   settings. (3ceb3d42)

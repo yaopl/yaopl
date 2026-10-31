@@ -39,7 +39,7 @@ static int gInitComplete;
 static gui_callback_t gFrameHook;
 
 static s32 gSemaId;
-static s32 gGUILockSemaId;
+static s32 gGUILockSemaId = -1;
 static ee_sema_t gQueueSema;
 
 static int screenWidth;
@@ -169,16 +169,20 @@ void guiEnd()
 
     DeleteSema(gSemaId);
     DeleteSema(gGUILockSemaId);
+    gGUILockSemaId = -1;
 }
 
+// The theme and the language are first loaded before guiInit() creates the lock: nothing to lock out then.
 void guiLock(void)
 {
-    WaitSema(gGUILockSemaId);
+    if (gGUILockSemaId >= 0)
+        WaitSema(gGUILockSemaId);
 }
 
 void guiUnlock(void)
 {
-    SignalSema(gGUILockSemaId);
+    if (gGUILockSemaId >= 0)
+        SignalSema(gGUILockSemaId);
 }
 
 void guiStartFrame(void)
@@ -1118,8 +1122,11 @@ static void guiHandleDeferredOps(void)
 
 void guiExecDeferredOps(void)
 {
-    // Clears deferred operations list by executing them.
+    // Clears deferred operations list by executing them. The IO thread calls this too: the operations change the
+    // menus, so not while the GUI thread draws a frame.
+    guiLock();
     guiHandleDeferredOps();
+    guiUnlock();
 }
 
 static void guiDrawBusy(int alpha)
