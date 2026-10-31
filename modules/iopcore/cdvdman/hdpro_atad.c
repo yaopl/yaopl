@@ -678,8 +678,10 @@ int sceAtaDmaTransfer(int device, void *buf, u32 lba, u32 nsectors, int dir)
 
     WAITIOSEMA(ata_io_sema);
 
-    if (!hdpro_io_start())
+    if (!hdpro_io_start()) {
+        SIGNALIOSEMA(ata_io_sema);
         return -1;
+    }
 
     while (nsectors) {
         len = (nsectors > 256) ? 256 : nsectors;
@@ -717,7 +719,7 @@ int sceAtaDmaTransfer(int device, void *buf, u32 lba, u32 nsectors, int dir)
     }
 
     if (!hdpro_io_finish())
-        return -2;
+        res = -2;
 
     SIGNALIOSEMA(ata_io_sema);
 
