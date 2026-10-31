@@ -326,6 +326,16 @@ if (Want "atad") {
     foreach ($c in "48 65535", "48 65536", "48 65537", "48 131072", "28 256", "28 257") { Test "atad LBA$($c.Replace(' ', ' sectors '))" atad-t $c.Split(" ") }
 }
 
+if (Want "smb") {
+    Copy-Item (Join-Path $Opl "modules\iopcore\cdvdman\smb.h") $build
+    Build smb t "modules\iopcore\cdvdman\smb.c" "USE_CUSTOM_RECV", "ZERO_PKT_ALIGNED", "CLIENT_MAX_XMIT_SIZE", "CLIENT_MAX_RECV_SIZE", "WAITIOSEMA", "SIGNALIOSEMA", "smb_ReadAndX", "smb_ReadFile", "smb_WriteAndX", "smb_WriteFile"
+    foreach ($t in "ok", "error", "closed") { Test "smb read $t" smb-t "read", $t }
+    foreach ($t in "ok", "error") { Test "smb write $t" smb-t "write", $t }
+    # write, read and open results of the SMB client: success, -EIO, 0, failed open
+    Build smbvmc t "modules\mcemu\device-smb.c" "DeviceWritePage", "DeviceReadPage"
+    foreach ($t in "512 512 1", "-5 -5 1", "0 0 1", "512 512 -1") { Test "smbvmc $t" smbvmc-t ($t -split " ") }
+}
+
 if (Want "bgm") {
     Build bgm t "src\sound.c" "bgmLoad"
     Test "bgmLoad default_bgm_path" bgm-t "mass:/MUSIC/100%s.ogg"

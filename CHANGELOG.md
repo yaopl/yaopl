@@ -5,6 +5,15 @@ Loader (OPL) before the fork.
 
 ## Unreleased
 
+- SMB: A game over SMB whose connection broke (for example after Samba dropped an idle PS2) no longer blocks
+  every later disc read and IGR: a failed read or write releases the SMB lock, and a connection closed in the
+  middle of a reply ends the read instead of looping forever. IGR then gets back to YAOPL. (f2c3a673,
+  e16e2d15)
+- SMB: A VMC over SMB reports a failed read or write, or a card that cannot be opened, to the game as an error
+  instead of as a page done. (964e4178)
+- SMB: The [SMB share](https://yaopl.github.io/yaopl/devices/smb/#a-game-freezes-after-an-idle-time) page
+  gives the Samba settings that keep a game from freezing after the console was left idle (upstream issue
+  #79). (36e07200)
 - GUI: Exiting, powering off or starting a game no longer hangs for good when the menu still has work queued,
   such as a cover loading over the network or an SMB start without a cable. (b5394714)
 - GUI: A theme that does not ship every button icon of the hint bar no longer freezes the menu; such a hint

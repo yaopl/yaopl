@@ -68,6 +68,8 @@ regenerate the file from a run on this tree:
 | `pad` | `readPads()` | the button repeat countdown jumps by 29 s at the tick counter wrap |
 | `genvmc` | `mc_writecluster()` | a failed write leaves the abort semaphore taken |
 | `atad` | in-game `ata_device_sector_io_internal()` | an LBA48 transfer of 65536 sectors or more loops forever, issuing 0-sector commands |
+| `smb` | in-game `smb_ReadFile()`, `smb_WriteFile()`, `smb_ReadAndX()` (`modules/iopcore/cdvdman/smb.c`) | a failed read or write leaves `smb_io_sema` taken, so the next disc read and IGR block; a connection closed in the middle of a reply loops forever |
+| `smbvmc` | `modules/mcemu/device-smb.c` `DeviceWritePage()`, `DeviceReadPage()` | an SMB error and a failed open of the VMC are reported to mcemu as a page done |
 | `bgm` | `bgmLoad()` | the default BGM path is the format string; a `bgm.ogg` that is not an Ogg stream is left open |
 | `guiops` | `src/gui.c` `guiDeferUpdate()`, `guiHandleDeferredOps()` | the IO thread, let in when the GUI thread gives the list back, appends to it, and the GUI thread then clears its end: the next append writes through NULL |
 | `staleid` | `src/menusys.c` `_menuLoadConfig()` with `bdmGetConfig()` and `sbPopulateConfig()` | the settings of the highlighted game are loaded after its list was reread: past the end of a shorter list, or from NULL when the device is gone |

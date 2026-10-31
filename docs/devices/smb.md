@@ -83,6 +83,20 @@ connection failed, the OK button itself says Reconnect.
 
 Network errors (200, 310, 311) are on the [Network setup](network.md#network-errors) page.
 
+## A game freezes after an idle time
+
+A game is paused, or waits on a menu, and freezes at its next disc read. With a Samba server, its NetBIOS
+keepalive messages pile up in the small network buffer pool of the PS2 while the game reads nothing; after
+about eight of them the PS2 stops answering and Samba drops the connection (upstream issue #79). Turn these
+keepalives off and let TCP keep the connection alive instead: in the `[global]` section of `smb.conf` set
+
+```ini
+keepalive = 0
+socket options = SO_KEEPALIVE=1 TCP_NODELAY=1
+```
+
+and restart Samba.
+
 ## Notes
 
 - SMB is slower than an internal HDD; in some games long videos can stutter. [UDPBD](udpbd.md) is a faster

@@ -642,6 +642,9 @@ static int smb_ReadAndX(u16 FID, u32 offsetlow, u32 offsethigh, void *readbuf, i
     // Handle fragmented packets
     while (rcv_size < expected_size) {
         r = plwip_recvfrom(main_socket, NULL, 0, &((u8 *)readbuf)[rcv_size - RRsp->DataOffset - 4], expected_size - rcv_size, 0, NULL, NULL); // - rcv_size
+        // 0: the connection is closed, < 0: an error
+        if (r <= 0)
+            return -2;
         rcv_size += r;
     }
 #else
@@ -686,8 +689,10 @@ int smb_ReadFile(u16 FID, u32 offsetlow, u32 offsethigh, void *readbuf, int nbyt
         toRead = remaining > CLIENT_MAX_RECV_SIZE ? CLIENT_MAX_RECV_SIZE : remaining;
 
         result = smb_ReadAndX(FID, offsetlow, offsethigh, ptr, toRead);
-        if (result <= 0)
+        if (result <= 0) {
+            SIGNALIOSEMA(smb_io_sema);
             return result;
+        }
 
         //Check for and handle overflow.
         if (offsetlow + result < offsetlow)
@@ -755,8 +760,10 @@ int smb_WriteFile(u16 FID, u32 offsetlow, u32 offsethigh, void *writebuf, int nb
         toWrite = remaining > CLIENT_MAX_XMIT_SIZE ? CLIENT_MAX_XMIT_SIZE : remaining;
 
         result = smb_WriteAndX(FID, offsetlow, offsethigh, ptr, toWrite);
-        if (result <= 0)
+        if (result <= 0) {
+            SIGNALIOSEMA(smb_io_sema);
             return result;
+        }
 
         //Check for and handle overflow.
         if (offsetlow + result < offsetlow)

@@ -255,6 +255,24 @@ atad LBA28 sectors 256             plain: 256 sectors: 1 commands (first 256, la
                                    asan:  256 sectors: 1 commands (first 256, last 256 sectors), 256 transferred, res 0
 atad LBA28 sectors 257             plain: 257 sectors: 2 commands (first 256, last 1 sectors), 257 transferred, res 0
                                    asan:  257 sectors: 2 commands (first 256, last 1 sectors), 257 transferred, res 0
+smb read ok                        plain: smb_ReadFile = 2500, 2500 of 2500 bytes read, smb_io_sema free
+                                   asan:  smb_ReadFile = 2500, 2500 of 2500 bytes read, smb_io_sema free
+smb read error                     plain: smb_ReadFile = -2, 0 of 2500 bytes read, smb_io_sema free
+                                   asan:  smb_ReadFile = -2, 0 of 2500 bytes read, smb_io_sema free
+smb read closed                    plain: smb_ReadFile = -2, 1000 of 2500 bytes read, smb_io_sema free
+                                   asan:  smb_ReadFile = -2, 1000 of 2500 bytes read, smb_io_sema free
+smb write ok                       plain: smb_WriteFile = 2500, smb_io_sema free
+                                   asan:  smb_WriteFile = 2500, smb_io_sema free
+smb write error                    plain: smb_WriteFile = -5, smb_io_sema free
+                                   asan:  smb_WriteFile = -5, smb_io_sema free
+smbvmc 512 512 1                   plain: DeviceWritePage = 1, DeviceReadPage = 1, DeviceReadPage before open = 1
+                                   asan:  DeviceWritePage = 1, DeviceReadPage = 1, DeviceReadPage before open = 1
+smbvmc -5 -5 1                     plain: DeviceWritePage = 0, DeviceReadPage = 0, DeviceReadPage before open = 0
+                                   asan:  DeviceWritePage = 0, DeviceReadPage = 0, DeviceReadPage before open = 0
+smbvmc 0 0 1                       plain: DeviceWritePage = 0, DeviceReadPage = 0, DeviceReadPage before open = 0
+                                   asan:  DeviceWritePage = 0, DeviceReadPage = 0, DeviceReadPage before open = 0
+smbvmc 512 512 -1                  plain: DeviceWritePage = 1, DeviceReadPage = 1, DeviceReadPage before open = 0
+                                   asan:  DeviceWritePage = 1, DeviceReadPage = 1, DeviceReadPage before open = 0
 bgmLoad default_bgm_path           plain: format string = "%s" | bgmLoad = -2
                                    asan:  format string = "%s" | bgmLoad = -2
 bgmLoad file not Ogg               plain: format string = "%s" | bgmLoad = -2 | files left open: 0

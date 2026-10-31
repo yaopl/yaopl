@@ -60,6 +60,8 @@ That is what IGR does when *IGR Path* is empty: set it to the path of `OPNPS2LD.
 ## Network and devices
 
 - SMB connection errors: see [SMB share → Errors](devices/smb.md#errors).
+- A game over SMB freezes after the console was left idle: see
+  [SMB share → A game freezes after an idle time](devices/smb.md#a-game-freezes-after-an-idle-time).
 - Network adapter, link and DHCP errors: see [Network setup → Network errors](devices/network.md#network-errors).
 - *The network adapter is used by UDPBD / by SMB*: only one of them can run; see [UDPBD → Limits](devices/udpbd.md#limits).
 - `<n>: HardDisk Drive not detected.` or `<n>: HardDisk Drive not formatted.` on the APA HDD page: the drive or
