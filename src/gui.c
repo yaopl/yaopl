@@ -1388,7 +1388,8 @@ int guiAlignMenuHints(menu_hint_item_t *hint, int font, int width)
 
     for (; hint; hint = hint->next) {
         GSTEXTURE *iconTex = thmGetTexture(hint->icon_id);
-        w = (iconTex->Width * 20) / iconTex->Height;
+        // thmGetTexture() is NULL for an icon the theme does not have; guiDrawIconAndText() then draws none
+        w = iconTex ? (iconTex->Width * 20) / iconTex->Height : 0;
         char *text = _l(hint->text_id);
 
         x -= rmWideScale(w) + 2;
@@ -1410,7 +1411,7 @@ int guiAlignSubMenuHints(int hintCount, int *textID, int *iconID, int font, int 
 
     for (i = 0; i < hintCount; i++) {
         GSTEXTURE *iconTex = thmGetTexture(iconID[i]);
-        w = (iconTex->Width * 20) / iconTex->Height;
+        w = iconTex ? (iconTex->Width * 20) / iconTex->Height : 0; // see guiAlignMenuHints()
         char *text = _l(textID[i]);
 
         x -= rmWideScale(w) + 2;
