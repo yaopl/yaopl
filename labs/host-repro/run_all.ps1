@@ -367,6 +367,13 @@ if (Want "texcache") {
     foreach ($c in "ok", "destroyed", "blocked") { Test "art cache $c" texcache-t $c }
 }
 
+if (Want "thmswap") {
+    # The end of thmLoad() is mirrored: it rebuilds the game art arrays where the tree's thmLoad() does
+    $swapDefine = if ((Get-Content -Raw (Join-Path $Opl "src\themes.c")).Contains("menuRebuildCaches();")) { "/DSWAP_REBUILDS" } else { "" }
+    Build thmswap t "src\texcache.c" "load_image_request_t", "cacheClearItem", "cacheInitCache", "cacheDestroyCache", "cacheGetTexture" -Source2 "src\menusys.c" -Funcs2 "submenuRebuildCache", "?menuRebuildCaches" -Source3 "src\themes.c" -Funcs3 "getGameImageTexture" -Defines $swapDefine
+    foreach ($c in "more", "fewer") { Test "theme swap, $c art caches" thmswap-t $c }
+}
+
 if (Want "readfile") {
     Build readfile t "src\util.c" "readFile"
     foreach ($c in "ok", "nomem", "short") { Test "readFile $c" readfile-t $c }
