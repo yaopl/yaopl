@@ -135,8 +135,6 @@ typedef struct
     png_bytep trans;
 } png_texture_t;
 
-static png_texture_t pngTexture;
-
 static texture_t internalDefault[TEXTURES_COUNT] = {
     {LOAD0_ICON, "load0", &load0_png},
     {LOAD1_ICON, "load1", &load1_png},
@@ -314,19 +312,19 @@ static void texReadMemFunction(png_structp pngPtr, png_bytep data, png_size_t le
     *PngBufferPtr = (u8 *)(*PngBufferPtr) + length;
 }
 
-static void texReadPixels4(GSTEXTURE *texture, png_bytep *rowPointers, size_t size)
+static void texReadPixels4(GSTEXTURE *texture, const png_texture_t *pngTexture, png_bytep *rowPointers, size_t size)
 {
     unsigned char *pixel = (unsigned char *)texture->Mem;
     png_clut_t *clut = (png_clut_t *)texture->Clut;
     int i;
 
-    memset(&clut[pngTexture.numPalette], 0, (16 - pngTexture.numPalette) * sizeof(clut[0]));
+    memset(&clut[pngTexture->numPalette], 0, (16 - pngTexture->numPalette) * sizeof(clut[0]));
 
-    for (i = 0; i < pngTexture.numPalette; i++) {
-        clut[i].red = pngTexture.palette[i].red;
-        clut[i].green = pngTexture.palette[i].green;
-        clut[i].blue = pngTexture.palette[i].blue;
-        clut[i].alpha = (i < pngTexture.numTrans) ? (pngTexture.trans[i] >> 1) : 0x80;
+    for (i = 0; i < pngTexture->numPalette; i++) {
+        clut[i].red = pngTexture->palette[i].red;
+        clut[i].green = pngTexture->palette[i].green;
+        clut[i].blue = pngTexture->palette[i].blue;
+        clut[i].alpha = (i < pngTexture->numTrans) ? (pngTexture->trans[i] >> 1) : 0x80;
     }
 
     for (i = 0; i < texture->Height; i++)
@@ -336,22 +334,22 @@ static void texReadPixels4(GSTEXTURE *texture, png_bytep *rowPointers, size_t si
         pixel[i] = (pixel[i] << 4) | (pixel[i] >> 4);
 }
 
-static void texReadPixels8(GSTEXTURE *texture, png_bytep *rowPointers, size_t size)
+static void texReadPixels8(GSTEXTURE *texture, const png_texture_t *pngTexture, png_bytep *rowPointers, size_t size)
 {
     unsigned char *pixel = (unsigned char *)texture->Mem;
     png_clut_t *clut = (png_clut_t *)texture->Clut;
     int i;
 
-    memset(&clut[pngTexture.numPalette], 0, (256 - pngTexture.numPalette) * sizeof(clut[0]));
+    memset(&clut[pngTexture->numPalette], 0, (256 - pngTexture->numPalette) * sizeof(clut[0]));
 
-    for (i = 0; i < pngTexture.numPalette; i++) {
-        clut[i].red = pngTexture.palette[i].red;
-        clut[i].green = pngTexture.palette[i].green;
-        clut[i].blue = pngTexture.palette[i].blue;
-        clut[i].alpha = (i < pngTexture.numTrans) ? (pngTexture.trans[i] >> 1) : 0x80;
+    for (i = 0; i < pngTexture->numPalette; i++) {
+        clut[i].red = pngTexture->palette[i].red;
+        clut[i].green = pngTexture->palette[i].green;
+        clut[i].blue = pngTexture->palette[i].blue;
+        clut[i].alpha = (i < pngTexture->numTrans) ? (pngTexture->trans[i] >> 1) : 0x80;
     }
 
-    for (i = 0; i < pngTexture.numPalette; i++) {
+    for (i = 0; i < pngTexture->numPalette; i++) {
         if ((i & 0x18) == 8) {
             png_clut_t tmp = clut[i];
             clut[i] = clut[i + 8];
@@ -363,7 +361,7 @@ static void texReadPixels8(GSTEXTURE *texture, png_bytep *rowPointers, size_t si
         memcpy(&pixel[i * texture->Width], rowPointers[i], texture->Width);
 }
 
-static void texReadPixels24(GSTEXTURE *texture, png_bytep *rowPointers, size_t size)
+static void texReadPixels24(GSTEXTURE *texture, const png_texture_t *pngTexture, png_bytep *rowPointers, size_t size)
 {
     struct pixel3
     {
@@ -379,7 +377,7 @@ static void texReadPixels24(GSTEXTURE *texture, png_bytep *rowPointers, size_t s
     }
 }
 
-static void texReadPixels32(GSTEXTURE *texture, png_bytep *rowPointers, size_t size)
+static void texReadPixels32(GSTEXTURE *texture, const png_texture_t *pngTexture, png_bytep *rowPointers, size_t size)
 {
     struct pixel
     {
@@ -396,8 +394,8 @@ static void texReadPixels32(GSTEXTURE *texture, png_bytep *rowPointers, size_t s
     }
 }
 
-static void texReadData(GSTEXTURE *texture, png_structp pngPtr, png_infop infoPtr,
-                        void (*texPngReadPixels)(GSTEXTURE *texture, png_bytep *rowPointers, size_t size))
+static void texReadData(GSTEXTURE *texture, png_structp pngPtr, png_infop infoPtr, const png_texture_t *pngTexture,
+                        void (*texPngReadPixels)(GSTEXTURE *texture, const png_texture_t *pngTexture, png_bytep *rowPointers, size_t size))
 {
     int rowBytes = png_get_rowbytes(pngPtr, infoPtr);
     size_t size = gsKit_texture_size_ee(texture->Width, texture->Height, texture->PSM);
@@ -423,7 +421,7 @@ static void texReadData(GSTEXTURE *texture, png_structp pngPtr, png_infop infoPt
 
     png_read_image(pngPtr, rowPointers);
 
-    texPngReadPixels(texture, rowPointers, size);
+    texPngReadPixels(texture, pngTexture, rowPointers, size);
 
     free(allRows);
     free(rowPointers);
@@ -440,6 +438,8 @@ static int texLoadAll(GSTEXTURE *texture, const char *filePath, int texId)
     png_rw_ptr readFunction = NULL;
     void *PngFileBufferPtr;
     void *pFileBuffer = NULL;
+    // Its own for each load: the GUI and the IO thread both load PNGs
+    png_texture_t pngTexture;
 
     if (filePath) {
         int fd = open(filePath, O_RDONLY, 0);
@@ -515,7 +515,7 @@ static int texLoadAll(GSTEXTURE *texture, const char *filePath, int texId)
     png_set_filler(pngPtr, 0xff, PNG_FILLER_AFTER);
     png_read_update_info(pngPtr, infoPtr);
 
-    void (*texPngReadPixels)(GSTEXTURE * texture, png_bytep * rowPointers, size_t size);
+    void (*texPngReadPixels)(GSTEXTURE * texture, const png_texture_t *pngTexture, png_bytep *rowPointers, size_t size);
     switch (png_get_color_type(pngPtr, infoPtr)) {
         case PNG_COLOR_TYPE_RGB_ALPHA:
             texture->PSM = GS_PSM_CT32;
@@ -560,7 +560,7 @@ static int texLoadAll(GSTEXTURE *texture, const char *filePath, int texId)
         return texEnd(pngPtr, infoPtr, pFileBuffer, ERR_BAD_DIMENSION);
     }
 
-    texReadData(texture, pngPtr, infoPtr, texPngReadPixels);
+    texReadData(texture, pngPtr, infoPtr, &pngTexture, texPngReadPixels);
 
     return texEnd(pngPtr, infoPtr, pFileBuffer, 0);
 }

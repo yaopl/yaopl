@@ -323,8 +323,8 @@ png rgba, allocation 4 fails       plain: result 0, 64x48 CT32 | pixels never wr
                                    asan:  result 0, 64x48 CT32 | pixels never written | OPL blocks left 0, libpng's largest block 7 KiB
 png pal8, allocation 2 fails       plain: CRASH 0xC0000005
                                    asan:  ASAN access-violation in texLoadAll
-png pal4, a pal8 loads meanwhile   plain: CRASH 0xC0000005
-                                   asan:  ASAN negative-size-param in texReadPixels4
+png pal4, a pal8 loads meanwhile   plain: result 0, 32x16 T4 | pixels read, palette entry 1 08050403 | OPL blocks left 0, libpng's largest block 32 KiB
+                                   asan:  result 0, 32x16 T4 | pixels read, palette entry 1 08050403 | OPL blocks left 0, libpng's largest block 32 KiB
 art cache ok                       plain: loaded ART/SLUS_123.45_COV | cover shown
                                    asan:  loaded ART/SLUS_123.45_COV | cover shown
 art cache destroyed                plain: request on the freed cache: done
