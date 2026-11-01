@@ -386,8 +386,13 @@ if (Want "thmswap") {
 }
 
 if (Want "appmenu") {
-    Build appmenu t "src\menusys.c" "menuRenameGame", "menuDeleteGame", "menuInitAppMenu", "submenuAllocItem", "submenuAppendItem", "submenuDestroyItem", "submenuDestroy", "submenuItemGetText", "menuRenderAppMenu", "menuHandleInputAppMenu" -Patch "char newName[nameLength];=>char newName[64]; // MSVC: no VLA"
+    Build appmenu t "src\menusys.c" "?menuIsCurrentItem", "menuRenameGame", "menuDeleteGame", "menuInitAppMenu", "submenuAllocItem", "submenuAppendItem", "submenuDestroyItem", "submenuDestroy", "submenuItemGetText", "menuRenderAppMenu", "menuHandleInputAppMenu" -Patch "char newName[nameLength];=>char newName[64]; // MSVC: no VLA", "char oldName[nameLength];=>char oldName[64];", "char name[nameLength];=>char name[64];"
     Test "app menu, apps list reread" appmenu-t
+}
+
+if (Want "stalesel") {
+    Build stalesel t "src\menusys.c" "?menuIsCurrentItem", "menuRenameGame", "menuDeleteGame", "_menuLoadConfig", "_menuRequestConfig", "menuLoadConfig" -Source2 "src\opl.c" -Funcs2 "itemExecSelect" -Source3 "src\gui.c" -Funcs3 "guiHandleDeferedIO" -Patch "char newName[nameLength];=>char newName[64]; // MSVC: no VLA", "char oldName[nameLength];=>char oldName[64];", "char name[nameLength];=>char name[64];"
+    foreach ($c in "delete-kept", "delete-pulled", "delete-reread", "rename-kept", "rename-pulled", "launch-kept", "launch-pulled", "launch-loading") { Test "selected game, $c" stalesel-t $c }
 }
 
 if (Want "readfile") {
