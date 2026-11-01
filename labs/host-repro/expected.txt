@@ -315,14 +315,14 @@ png badzlib                        plain: result -4, 64x48 CT32 | pixels never w
                                    asan:  result -4, 64x48 CT32 | pixels never written | OPL blocks left 3, libpng's largest block 32 KiB
 png wide                           plain: result -5, 1000000x1 CT32 | no pixels | OPL blocks left 0, libpng's largest block 3907 KiB
                                    asan:  result -5, 1000000x1 CT32 | no pixels | OPL blocks left 0, libpng's largest block 3907 KiB
-png rgba, allocation 2 fails       plain: result 0, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
-                                   asan:  result 0, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
-png rgba, allocation 3 fails       plain: CRASH 0xC0000005
-                                   asan:  ASAN access-violation in texReadData
-png rgba, allocation 4 fails       plain: result 0, 64x48 CT32 | pixels never written | OPL blocks left 0, libpng's largest block 7 KiB
-                                   asan:  result 0, 64x48 CT32 | pixels never written | OPL blocks left 0, libpng's largest block 7 KiB
-png pal8, allocation 2 fails       plain: CRASH 0xC0000005
-                                   asan:  ASAN access-violation in texLoadAll
+png rgba, allocation 2 fails       plain: result -1, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
+                                   asan:  result -1, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
+png rgba, allocation 3 fails       plain: result -1, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
+                                   asan:  result -1, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
+png rgba, allocation 4 fails       plain: result -1, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
+                                   asan:  result -1, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
+png pal8, allocation 2 fails       plain: result -1, 32x16 T8 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
+                                   asan:  result -1, 32x16 T8 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
 png pal4, a pal8 loads meanwhile   plain: result 0, 32x16 T4 | pixels read, palette entry 1 08050403 | OPL blocks left 0, libpng's largest block 32 KiB
                                    asan:  result 0, 32x16 T4 | pixels read, palette entry 1 08050403 | OPL blocks left 0, libpng's largest block 32 KiB
 art cache ok                       plain: loaded ART/SLUS_123.45_COV | cover shown

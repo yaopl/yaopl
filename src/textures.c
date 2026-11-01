@@ -394,8 +394,8 @@ static void texReadPixels32(GSTEXTURE *texture, const png_texture_t *pngTexture,
     }
 }
 
-static void texReadData(GSTEXTURE *texture, png_structp pngPtr, png_infop infoPtr, const png_texture_t *pngTexture,
-                        void (*texPngReadPixels)(GSTEXTURE *texture, const png_texture_t *pngTexture, png_bytep *rowPointers, size_t size))
+static int texReadData(GSTEXTURE *texture, png_structp pngPtr, png_infop infoPtr, const png_texture_t *pngTexture,
+                       void (*texPngReadPixels)(GSTEXTURE *texture, const png_texture_t *pngTexture, png_bytep *rowPointers, size_t size))
 {
     int rowBytes = png_get_rowbytes(pngPtr, infoPtr);
     size_t size = gsKit_texture_size_ee(texture->Width, texture->Height, texture->PSM);
@@ -404,16 +404,17 @@ static void texReadData(GSTEXTURE *texture, png_structp pngPtr, png_infop infoPt
     // failed allocation
     if (!texture->Mem) {
         LOG("TEXTURES PngReadData: Failed to allocate %d bytes\n", size);
-        return;
+        return ERR_BAD_FILE;
     }
 
     png_bytep *rowPointers = calloc(texture->Height, sizeof(png_bytep));
 
     png_bytep allRows = malloc(rowBytes * texture->Height);
-    if (!allRows) {
+    if (!rowPointers || !allRows) {
+        free(allRows);
         free(rowPointers);
         LOG("TEXTURES PngReadData: Failed to allocate memory for PNG rows\n");
-        return;
+        return ERR_BAD_FILE;
     }
 
     for (int row = 0; row < texture->Height; row++)
@@ -427,6 +428,8 @@ static void texReadData(GSTEXTURE *texture, png_structp pngPtr, png_infop infoPt
     free(rowPointers);
 
     png_read_end(pngPtr, NULL);
+
+    return 0;
 }
 
 static int texLoadAll(GSTEXTURE *texture, const char *filePath, int texId)
@@ -538,12 +541,16 @@ static int texLoadAll(GSTEXTURE *texture, const char *filePath, int texId)
             if (bitDepth == 4) {
                 texture->PSM = GS_PSM_T4;
                 texture->Clut = memalign(128, gsKit_texture_size_ee(8, 2, GS_PSM_CT32));
+                if (!texture->Clut)
+                    return texEnd(pngPtr, infoPtr, pFileBuffer, ERR_BAD_FILE);
                 memset(texture->Clut, 0, gsKit_texture_size_ee(8, 2, GS_PSM_CT32));
 
                 texPngReadPixels = &texReadPixels4;
             } else if (bitDepth == 8) {
                 texture->PSM = GS_PSM_T8;
                 texture->Clut = memalign(128, gsKit_texture_size_ee(16, 16, GS_PSM_CT32));
+                if (!texture->Clut)
+                    return texEnd(pngPtr, infoPtr, pFileBuffer, ERR_BAD_FILE);
                 memset(texture->Clut, 0, gsKit_texture_size_ee(16, 16, GS_PSM_CT32));
 
                 texPngReadPixels = &texReadPixels8;
@@ -560,9 +567,12 @@ static int texLoadAll(GSTEXTURE *texture, const char *filePath, int texId)
         return texEnd(pngPtr, infoPtr, pFileBuffer, ERR_BAD_DIMENSION);
     }
 
-    texReadData(texture, pngPtr, infoPtr, &pngTexture, texPngReadPixels);
+    // Out of memory, the texture is not used: no picture rather than one never written
+    int result = texReadData(texture, pngPtr, infoPtr, &pngTexture, texPngReadPixels);
+    if (result < 0)
+        texFree(texture);
 
-    return texEnd(pngPtr, infoPtr, pFileBuffer, 0);
+    return texEnd(pngPtr, infoPtr, pFileBuffer, result);
 }
 
 static int texLoad(GSTEXTURE *texture, const char *filePath)
