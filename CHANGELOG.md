@@ -5,6 +5,9 @@ Loader (OPL) before the fork.
 
 ## Unreleased
 
+- GUI: Deleting, renaming or starting a game whose device is pulled or whose list is refreshed while the
+  confirmation, the keyboard or "Loading settings" is up no longer freezes the menu or hits another game; the
+  action is dropped. (5211110c)
 - Apps: The menu of an app (Triangle on an app) no longer freezes when a USB drive comes up or the list is
   refreshed while it is open; it goes back to the list. (c6fc06f8)
 - Apps: An app started with an argument (`argv1=` in its `title.cfg`) gets it intact: it was read from memory
