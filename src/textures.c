@@ -506,6 +506,9 @@ static int texLoadAll(GSTEXTURE *texture, const char *filePath, int texId)
     if (!pngPtr)
         return texEnd(pngPtr, infoPtr, pFileBuffer, ERR_READ_STRUCT);
 
+    // texSizeValidate() takes no more: libpng then refuses a larger image before it allocates its rows
+    png_set_user_limits(pngPtr, 1024, 1024);
+
     infoPtr = png_create_info_struct(pngPtr);
     if (!infoPtr)
         return texEnd(pngPtr, infoPtr, pFileBuffer, ERR_INFO_STRUCT);
