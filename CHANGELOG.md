@@ -5,6 +5,14 @@ Loader (OPL) before the fork.
 
 ## Unreleased
 
+- GUI: A cover or theme image far larger than the menu can show (over 1024 pixels wide or high) is refused
+  before it takes megabytes of memory. (07c868d2)
+- GUI: A cover or theme image that is cut short or damaged no longer loses up to 1.4 MiB of memory each time
+  it is loaded, and one cut short is no longer read past its end. (428c483a)
+- GUI: An image that does not fit in memory is left out: it was drawn from memory never written, or crashed
+  the menu. (d55b62a1)
+- GUI: Loading a theme while covers load (a theme change, a device with the theme coming up) no longer gives a
+  palette image the colours of another one, which could crash the menu. (23802676)
 - Apps: The menu of an app (Triangle on an app) no longer freezes when a USB drive comes up or the list is
   refreshed while it is open; it goes back to the list. (c6fc06f8)
 - Apps: An app started with an argument (`argv1=` in its `title.cfg`) gets it intact: it was read from memory

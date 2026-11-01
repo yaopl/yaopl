@@ -2,6 +2,7 @@
 import os
 import struct
 import sys
+import zlib
 
 
 def cheats(out):
@@ -152,6 +153,57 @@ def msgbox_texts(out):
             f.write(text.encode("utf-8"))
 
 
+def png_chunk(kind, data):
+    return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
+
+
+def png_file(width, height, color_type, depth, idat, plte=None, trns=None):
+    ihdr = struct.pack(">IIBBBBB", width, height, depth, color_type, 0, 0, 0)
+    data = b"\x89PNG\r\n\x1a\n" + png_chunk(b"IHDR", ihdr)
+    if plte:
+        data += png_chunk(b"PLTE", plte)
+    if trns:
+        data += png_chunk(b"tRNS", trns)
+    return data + png_chunk(b"IDAT", idat) + png_chunk(b"IEND", b"")
+
+
+def png_rows(width, height, bpp, seed=1):
+    # pseudo-random pixels, so that the compressed image is about as large as the raw one
+    rows, x = b"", seed
+    for _ in range(height):
+        row = bytearray()
+        for _ in range((width * bpp + 7) // 8):
+            x = (x * 1103515245 + 12345) & 0x7FFFFFFF
+            row.append(x >> 16 & 0xFF)
+        rows += b"\x00" + bytes(row)
+    return rows
+
+
+def png_images(out):
+    rows = png_rows(64, 48, 32)
+    rgba = png_file(64, 48, 6, 8, zlib.compress(rows))
+    first = rows[: 8 * (1 + 64 * 4)]
+    files = {
+        "png_rgba.png": rgba,
+        "png_pal4.png": png_file(32, 16, 3, 4, zlib.compress(png_rows(32, 16, 4)),
+                                 plte=bytes(range(48)), trns=bytes(range(0, 256, 16))),
+        "png_pal8.png": png_file(32, 16, 3, 8, zlib.compress(png_rows(32, 16, 8)),
+                                 plte=bytes(n % 256 for n in range(768, 0, -1))),
+        # the file ends in the middle of the image data
+        "png_trunc.png": rgba[: len(rgba) // 2],
+        # complete chunks, but after 8 rows the zlib stream has a block of the reserved type 3
+        "png_badzlib.png": png_file(64, 48, 6, 8, b"\x78\x01\x00" + struct.pack("<HH", len(first), len(first) ^ 0xFFFF)
+                                    + first + b"\x07" + bytes(16)),
+        # far wider than the 1024 pixels OPL takes
+        "png_wide.png": png_file(1000000, 1, 6, 8, zlib.compress(bytes(1 + 4000000), 9)),
+        # as wide as OPL takes
+        "png_1024.png": png_file(1024, 4, 2, 8, zlib.compress(png_rows(1024, 4, 24))),
+    }
+    for name, data in files.items():
+        with open(os.path.join(out, name), "wb") as f:
+            f.write(data)
+
+
 def main():
     out = sys.argv[1]
     os.makedirs(out, exist_ok=True)
@@ -161,6 +213,7 @@ def main():
     config_files(out)
     zso_images(out)
     msgbox_texts(out)
+    png_images(out)
     with open(os.path.join(out, "zero.bin"), "wb") as f:
         f.write(bytes(65536))
     print("inputs written to", out)

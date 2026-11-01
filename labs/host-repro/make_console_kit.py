@@ -108,15 +108,20 @@ def zso_bad_index(z: bytes, sector: int) -> bytes:
     return bytes(z)
 
 
-def png_grey(width: int, height: int) -> bytes:
-    """An 8-bit greyscale PNG (colour type 0) with a diagonal gradient."""
+def png_grey(width: int, height: int, bad_after: int = 0) -> bytes:
+    """An 8-bit greyscale PNG (colour type 0) with a diagonal gradient. With bad_after, the zlib data
+    holds that many rows and then a block of the reserved type 3, which libpng fails on."""
 
     def chunk(tag: bytes, data: bytes) -> bytes:
         return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
 
     rows = b"".join(b"\0" + bytes((x + y) & 0xFF for x in range(width)) for y in range(height))
     ihdr = struct.pack(">IIBBBBB", width, height, 8, 0, 0, 0, 0)
-    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", ihdr) + chunk(b"IDAT", zlib.compress(rows)) + chunk(b"IEND", b"")
+    idat = zlib.compress(rows)
+    if bad_after:
+        first = rows[: bad_after * (1 + width)]
+        idat = b"\x78\x01\x00" + struct.pack("<HH", len(first), len(first) ^ 0xFFFF) + first + b"\x07" + bytes(16)
+    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", ihdr) + chunk(b"IDAT", idat) + chunk(b"IEND", b"")
 
 
 THEME_CFG = """# YAOPL test theme: no ItemsList (OPL adds a default one), a StaticImage whose file is missing,
@@ -233,6 +238,13 @@ def main():
     write(os.path.join(out, "theme-test", "THM", "thm_yaopl-test", "conf_theme.cfg"), THEME_CFG.encode("ascii"))
     # A grey cover: OPL only loaded RGB, RGBA and palette PNGs
     write(os.path.join(out, "art-grey", "ART", gid.decode() + "_COV.png"), png_grey(140, 200))
+    # Broken art: a cover cut short, an icon whose image data turns bad after 8 rows, a screenshot
+    # 100000 pixels wide. Each must fail to load and leave the game without that image; OPL read past
+    # the cut cover, lost the memory of the first two and allocated about 800 KB of rows for the third
+    cover = png_grey(140, 200)
+    write(os.path.join(out, "art-broken", "ART", gid.decode() + "_COV.png"), cover[: len(cover) // 2])
+    write(os.path.join(out, "art-broken", "ART", gid.decode() + "_ICO.png"), png_grey(64, 64, bad_after=8))
+    write(os.path.join(out, "art-broken", "ART", gid.decode() + "_SCR.png"), png_grey(100000, 1))
     # A language file name shorter than lang_X.lng: the scan of a device's LNG folder crashed on it
     write(os.path.join(out, "lng-short-name", "LNG", "ru.lng"), b"Russian\r\nFontName\r\n")
     print("game ID", gid.decode(), "- files written to", out)

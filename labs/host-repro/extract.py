@@ -3,9 +3,10 @@
 Usage: extract.py <source.c> <name> [<name> ...]
 A name matches a function definition (`... name(` at column 0, body up to the
 next `}` at column 0), a `#define name` (with its continuation lines), a
-`struct name` block or a `typedef struct { ... } name;` block. A name that
-starts with `?` may be absent (a helper that only a fixed tree has). Output
-goes to stdout in source order.
+`struct name` block, a `typedef struct { ... } name;` block or a one-line
+`static` variable (`static int name = 1;`). A name that starts with `?` may
+be absent (a helper that only a fixed tree has). Output goes to stdout in
+source order.
 """
 import re
 import sys
@@ -28,6 +29,12 @@ def main():
             out.extend(lines[i : j + 1])
             found.add(m.group(1))
             i = j + 1
+            continue
+        m = re.match(r"^static\s+[^()=;]*?\b(\w+)\s*(\[[^\]]*\])?\s*(=[^;]*)?;\s*$", line)
+        if m and m.group(1) in names:
+            out.append(line)
+            found.add(m.group(1))
+            i += 1
             continue
         m = re.match(r"^struct\s+(\w+)\s*$", line)
         if m and m.group(1) in names:
