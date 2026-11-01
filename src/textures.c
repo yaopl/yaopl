@@ -135,6 +135,13 @@ typedef struct
     png_bytep trans;
 } png_texture_t;
 
+// What texReadMemFunction() has left to give libpng
+typedef struct
+{
+    const u8 *data;
+    size_t left;
+} png_reader_t;
+
 static texture_t internalDefault[TEXTURES_COUNT] = {
     {LOAD0_ICON, "load0", &load0_png},
     {LOAD1_ICON, "load1", &load1_png},
@@ -306,10 +313,15 @@ static int texEnd(png_structp pngPtr, png_infop infoPtr, void *pFileBuffer, int 
 
 static void texReadMemFunction(png_structp pngPtr, png_bytep data, png_size_t length)
 {
-    void **PngBufferPtr = png_get_io_ptr(pngPtr);
+    png_reader_t *reader = png_get_io_ptr(pngPtr);
 
-    memcpy(data, *PngBufferPtr, length);
-    *PngBufferPtr = (u8 *)(*PngBufferPtr) + length;
+    // A PNG that ends early fails like any other broken PNG
+    if (length > reader->left)
+        png_error(pngPtr, "PNG data ends early");
+
+    memcpy(data, reader->data, length);
+    reader->data += length;
+    reader->left -= length;
 }
 
 static void texReadPixels4(GSTEXTURE *texture, const png_texture_t *pngTexture, png_bytep *rowPointers, size_t size)
@@ -420,14 +432,22 @@ static int texReadData(GSTEXTURE *texture, png_structp pngPtr, png_infop infoPtr
     for (int row = 0; row < texture->Height; row++)
         rowPointers[row] = &allRows[row * rowBytes];
 
+    // A libpng error in the image data returns here instead of texLoadAll(), which makes no libpng call
+    // after this function but png_destroy_read_struct(): free the rows, texLoadAll() frees the texture
+    if (setjmp(png_jmpbuf(pngPtr))) {
+        free(allRows);
+        free(rowPointers);
+        return ERR_SET_JMP;
+    }
+
     png_read_image(pngPtr, rowPointers);
 
     texPngReadPixels(texture, pngTexture, rowPointers, size);
 
+    png_read_end(pngPtr, NULL);
+
     free(allRows);
     free(rowPointers);
-
-    png_read_end(pngPtr, NULL);
 
     return 0;
 }
@@ -439,7 +459,7 @@ static int texLoadAll(GSTEXTURE *texture, const char *filePath, int texId)
     png_infop infoPtr = NULL;
     png_voidp readData = NULL;
     png_rw_ptr readFunction = NULL;
-    void *PngFileBufferPtr;
+    png_reader_t reader;
     void *pFileBuffer = NULL;
     // Its own for each load: the GUI and the IO thread both load PNGs
     png_texture_t pngTexture;
@@ -467,15 +487,18 @@ static int texLoadAll(GSTEXTURE *texture, const char *filePath, int texId)
 
         close(fd);
 
-        PngFileBufferPtr = pFileBuffer;
-        readData = &PngFileBufferPtr;
+        reader.data = pFileBuffer;
+        reader.left = fileSize;
+        readData = &reader;
         readFunction = &texReadMemFunction;
     } else {
         if (texId == -1 || !internalDefault[texId].texture)
             return ERR_BAD_FILE;
 
-        PngFileBufferPtr = internalDefault[texId].texture;
-        readData = &PngFileBufferPtr;
+        // Built into the ELF: valid, and its size is not kept here
+        reader.data = (const u8 *)internalDefault[texId].texture;
+        reader.left = (size_t)-1;
+        readData = &reader;
         readFunction = &texReadMemFunction;
     }
 
@@ -567,7 +590,7 @@ static int texLoadAll(GSTEXTURE *texture, const char *filePath, int texId)
         return texEnd(pngPtr, infoPtr, pFileBuffer, ERR_BAD_DIMENSION);
     }
 
-    // Out of memory, the texture is not used: no picture rather than one never written
+    // Out of memory or a broken image: no picture rather than one never or half written
     int result = texReadData(texture, pngPtr, infoPtr, &pngTexture, texPngReadPixels);
     if (result < 0)
         texFree(texture);

@@ -309,10 +309,10 @@ png pal4                           plain: result 0, 32x16 T4 | pixels read, pale
                                    asan:  result 0, 32x16 T4 | pixels read, palette entry 1 08050403 | OPL blocks left 0, libpng's largest block 32 KiB
 png pal8                           plain: result 0, 32x16 T8 | pixels read, palette entry 1 80fbfcfd | OPL blocks left 0, libpng's largest block 32 KiB
                                    asan:  result 0, 32x16 T8 | pixels read, palette entry 1 80fbfcfd | OPL blocks left 0, libpng's largest block 32 KiB
-png trunc                          plain: result -4, 64x48 CT32 | pixels never written | OPL blocks left 3, libpng's largest block 32 KiB
-                                   asan:  ASAN heap-buffer-overflow in texReadMemFunction
-png badzlib                        plain: result -4, 64x48 CT32 | pixels never written | OPL blocks left 3, libpng's largest block 32 KiB
-                                   asan:  result -4, 64x48 CT32 | pixels never written | OPL blocks left 3, libpng's largest block 32 KiB
+png trunc                          plain: result -4, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 8 KiB
+                                   asan:  result -4, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 8 KiB
+png badzlib                        plain: result -4, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 32 KiB
+                                   asan:  result -4, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 32 KiB
 png wide                           plain: result -5, 1000000x1 CT32 | no pixels | OPL blocks left 0, libpng's largest block 3907 KiB
                                    asan:  result -5, 1000000x1 CT32 | no pixels | OPL blocks left 0, libpng's largest block 3907 KiB
 png rgba, allocation 2 fails       plain: result -1, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
