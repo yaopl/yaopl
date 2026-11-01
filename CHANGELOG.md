@@ -5,6 +5,9 @@ Loader (OPL) before the fork.
 
 ## Unreleased
 
+- GUI: Changing to a theme with other cover kinds (the USB drive with the chosen theme coming up, a pick in
+  Display Settings) no longer damages memory, which could crash the menu later, mostly after an HD video mode;
+  a language change no longer leaves a game showing another game's cover. (abc844c9)
 - GUI: The settings dialogs, the on-screen keyboard and the colour picker no longer draw a theme or language
   that was replaced while they were open (a USB stick, SMB share or HDD with the configured theme or language
   coming up, or the stick with the language pulled): the menu could show garbled text or freeze. (ce6323f5)

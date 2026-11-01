@@ -410,6 +410,22 @@ void submenuRebuildCache(submenu_list_t *submenu)
     }
 }
 
+// The art cache ids of every list, for a new theme. Call under guiLock() together with the theme swap: a frame
+// drawn in between would index the ids by the new theme's caches.
+void menuRebuildCaches(void)
+{
+    menu_list_t *cur;
+
+    // the theme is first loaded before menuInit()
+    if (menuListSemaId < 0)
+        return;
+
+    WaitSema(menuListSemaId);
+    for (cur = menu; cur != NULL; cur = cur->next)
+        submenuRebuildCache(cur->item->submenu);
+    SignalSema(menuListSemaId);
+}
+
 static submenu_list_t *submenuAllocItem(int icon_id, char *text, int id, int text_id)
 {
     submenu_list_t *it = (submenu_list_t *)malloc(sizeof(submenu_list_t));

@@ -90,6 +90,7 @@ void menuInitAppMenu(void);
 void menuAppendItem(menu_item_t *item);
 
 void submenuRebuildCache(submenu_list_t *submenu);
+void menuRebuildCaches(void);
 submenu_list_t *submenuAppendItem(submenu_list_t **submenu, int icon_id, char *text, int id, int text_id);
 void submenuRemoveItem(submenu_list_t **submenu, int id);
 void submenuDestroy(submenu_list_t **submenu);
