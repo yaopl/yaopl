@@ -313,6 +313,8 @@ theme swap, more art caches        plain: frame after the swap drawn, 40 art req
                                    asan:  frame after the swap drawn, 40 art requests
 theme swap, fewer art caches       plain: frame after the swap drawn, 34 art requests
                                    asan:  frame after the swap drawn, 34 art requests
+app menu, apps list reread         plain: the apps list shown, nothing deleted
+                                   asan:  the apps list shown, nothing deleted
 readFile ok                        plain: ok: buffer returned, size 4096, descriptors left open 0
                                    asan:  ok: buffer returned, size 4096, descriptors left open 0
 readFile nomem                     plain: nomem: buffer NULL, size 0, descriptors left open 0

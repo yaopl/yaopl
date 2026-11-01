@@ -1249,6 +1249,13 @@ void menuRenderAppMenu()
     if (!appMenu)
         return;
 
+    // The IO thread clears the apps list when it rereads it (after any other list changed): the app is gone. Go back to
+    // the list, as the game menu does when its device goes away; the reread list selects another app.
+    if (selected_item->item->current == NULL) {
+        guiSwitchScreen(GUI_SCREEN_MAIN);
+        return;
+    }
+
     // draw the animated menu
     if (!appMenuCurrent)
         appMenuCurrent = appMenu;

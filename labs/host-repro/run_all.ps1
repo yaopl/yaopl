@@ -385,6 +385,11 @@ if (Want "thmswap") {
     foreach ($c in "more", "fewer") { Test "theme swap, $c art caches" thmswap-t $c }
 }
 
+if (Want "appmenu") {
+    Build appmenu t "src\menusys.c" "menuRenameGame", "menuDeleteGame", "menuInitAppMenu", "submenuAllocItem", "submenuAppendItem", "submenuDestroyItem", "submenuDestroy", "submenuItemGetText", "menuRenderAppMenu", "menuHandleInputAppMenu" -Patch "char newName[nameLength];=>char newName[64]; // MSVC: no VLA"
+    Test "app menu, apps list reread" appmenu-t
+}
+
 if (Want "readfile") {
     Build readfile t "src\util.c" "readFile"
     foreach ($c in "ok", "nomem", "short") { Test "readFile $c" readfile-t $c }
