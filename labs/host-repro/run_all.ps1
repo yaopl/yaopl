@@ -405,7 +405,7 @@ if (Want "png") {
     $deps = PngLib
     $pngFuncs = "maxSize", "png_clut_t", "png_texture_t", "?pngTexture", "?png_reader_t", "texSizeValidate", "texPrepare", "texFree", "texEnd", "texReadMemFunction", "texReadPixels4", "texReadPixels8", "texReadPixels24", "texReadPixels32", "texReadData", "texLoadAll"
     Build png t "src\textures.c" $pngFuncs -Defines "/I`"$deps\libpng-1.6.53`" /I`"$deps\zlib-1.3.1`"" -Link "`"$deps\png.lib`""
-    foreach ($t in "rgba", "pal4", "pal8", "trunc", "badzlib", "wide") { Test "png $t" png-t "load", (Join-Path $inputs "png_$t.png") }
+    foreach ($t in "rgba", "pal4", "pal8", "trunc", "badzlib", "wide", "1024") { Test "png $t" png-t "load", (Join-Path $inputs "png_$t.png") }
     foreach ($n in "2", "3", "4") { Test "png rgba, allocation $n fails" png-t "oom", (Join-Path $inputs "png_rgba.png"), $n }
     Test "png pal8, allocation 2 fails" png-t "oom", (Join-Path $inputs "png_pal8.png"), "2"
     Test "png pal4, a pal8 loads meanwhile" png-t "race", (Join-Path $inputs "png_pal4.png"), (Join-Path $inputs "png_pal8.png")

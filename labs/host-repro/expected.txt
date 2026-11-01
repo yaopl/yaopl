@@ -315,6 +315,8 @@ png badzlib                        plain: result -4, 64x48 CT32 | no pixels | OP
                                    asan:  result -4, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 32 KiB
 png wide                           plain: result -4, 0x0 CT24 | no pixels | OPL blocks left 0, libpng's largest block 2 KiB
                                    asan:  result -4, 0x0 CT24 | no pixels | OPL blocks left 0, libpng's largest block 2 KiB
+png 1024                           plain: result 0, 1024x4 CT24 | pixels read | OPL blocks left 0, libpng's largest block 32 KiB
+                                   asan:  result 0, 1024x4 CT24 | pixels read | OPL blocks left 0, libpng's largest block 32 KiB
 png rgba, allocation 2 fails       plain: result -1, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
                                    asan:  result -1, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
 png rgba, allocation 3 fails       plain: result -1, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB

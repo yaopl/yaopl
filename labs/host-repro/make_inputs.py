@@ -196,6 +196,8 @@ def png_images(out):
                                     + first + b"\x07" + bytes(16)),
         # far wider than the 1024 pixels OPL takes
         "png_wide.png": png_file(1000000, 1, 6, 8, zlib.compress(bytes(1 + 4000000), 9)),
+        # as wide as OPL takes
+        "png_1024.png": png_file(1024, 4, 2, 8, zlib.compress(png_rows(1024, 4, 24))),
     }
     for name, data in files.items():
         with open(os.path.join(out, name), "wb") as f:
