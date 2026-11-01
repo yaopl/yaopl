@@ -97,11 +97,20 @@ static char *appGetBoot(char *device, int max, char *path)
     return path;
 }
 
+static void appFreeLegacyConfig(void)
+{
+    if (configApps != NULL) {
+        configFree(configApps);
+        configApps = NULL;
+    }
+}
+
 void appInit(item_list_t *itemList)
 {
     LOG("APPSUPPORT Init\n");
     appForceUpdate = 1;
     configGetInt(configGetByType(CONFIG_OPL), "app_frames_delay", &appItemList.delay);
+    appFreeLegacyConfig();
     configApps = oplGetLegacyAppsConfig();
     appsList = NULL;
     appItemList.enabled = 1;
@@ -126,8 +135,10 @@ static int appNeedsUpdate(item_list_t *itemList)
     if (oplShouldAppsUpdate())
         update = 1;
 
-    if (update)
+    if (update) {
+        appFreeLegacyConfig();
         configApps = oplGetLegacyAppsConfig();
+    }
 
     return update;
 }
@@ -279,6 +290,7 @@ static int appUpdateItemList(item_list_t *itemList)
 static void appFreeList(void)
 {
     if (appsList != NULL) {
+        free(appsList);
         appsList = NULL;
         appItemCount = 0;
     }
@@ -368,7 +380,7 @@ static void appLaunchItem(item_list_t *itemList, int id, config_set_t *configSet
 {
     int fd;
     char filename[256];
-    const char *argv1;
+    char argv1[CONFIG_KEY_VALUE_LEN];
 
     // Retrieve configuration set by appGetConfig()
     configGetStrCopy(configSet, CONFIG_ITEM_STARTUP, filename, sizeof(filename));
@@ -414,8 +426,9 @@ static void appLaunchItem(item_list_t *itemList, int id, config_set_t *configSet
         if (mode == HDD_MODE)
             snprintf(partition, sizeof(partition), "%s:", gOPLPart);
 
-        if (configGetStr(configSet, CONFIG_ITEM_ALTSTARTUP, &argv1) != 0) {
-            argv[0] = (char *)argv1;
+        // A copy: deinit() frees configSet (menuEnd())
+        if (configGetStrCopy(configSet, CONFIG_ITEM_ALTSTARTUP, argv1, sizeof(argv1)) != 0) {
+            argv[0] = argv1;
             argc = 1;
         }
 
@@ -493,6 +506,7 @@ static void appCleanUp(item_list_t *itemList, int exception)
         LOG("APPSUPPORT CleanUp\n");
 
         appFreeList();
+        appFreeLegacyConfig();
     }
 }
 
@@ -503,6 +517,7 @@ static void appShutdown(item_list_t *itemList)
         LOG("APPSUPPORT Shutdown\n");
 
         appFreeList();
+        appFreeLegacyConfig();
     }
 }
 
