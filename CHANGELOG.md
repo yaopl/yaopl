@@ -5,6 +5,8 @@ Loader (OPL) before the fork.
 
 ## Unreleased
 
+- Apps: The menu of an app (Triangle on an app) no longer freezes when a USB drive comes up or the list is
+  refreshed while it is open; it goes back to the list. (c6fc06f8)
 - Apps: An app started with an argument (`argv1=` in its `title.cfg`) gets it intact: it was read from memory
   already freed when the menu closed. (e861b52e)
 - Apps: The apps list no longer loses memory each time it is built again, at start and whenever a USB drive
