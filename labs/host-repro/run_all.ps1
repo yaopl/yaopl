@@ -39,7 +39,7 @@ function Emit([string]$Line) {
     $Line
 }
 
-function Build([string]$Harness, [string]$Tag, [string]$Source, [string[]]$Funcs, [string]$Source2 = "", [string[]]$Funcs2 = @(), [string]$Source3 = "", [string[]]$Funcs3 = @(), [string]$Source4 = "", [string[]]$Funcs4 = @(), [string]$Source5 = "", [string[]]$Funcs5 = @(), [string[]]$Patch = @(), [string]$Defines = "") {
+function Build([string]$Harness, [string]$Tag, [string]$Source, [string[]]$Funcs, [string]$Source2 = "", [string[]]$Funcs2 = @(), [string]$Source3 = "", [string[]]$Funcs3 = @(), [string]$Source4 = "", [string[]]$Funcs4 = @(), [string]$Source5 = "", [string[]]$Funcs5 = @(), [string[]]$Patch = @(), [string]$Defines = "", [string]$Link = "") {
     $text = ""
     if ($Source5) { $text += (python -I (Join-Path $here "extract.py") (Join-Path $Opl $Source5) @Funcs5 | Out-String) }
     if ($Source4) { $text += (python -I (Join-Path $here "extract.py") (Join-Path $Opl $Source4) @Funcs4 | Out-String) }
@@ -53,9 +53,37 @@ function Build([string]$Harness, [string]$Tag, [string]$Source, [string[]]$Funcs
     Set-Content -Encoding ascii (Join-Path $build ($Harness + "_extracted.c")) $text
     $src = Join-Path $here ($Harness + "_harness.c")
     $exe = Join-Path $build "$Harness-$Tag"
-    $common = "/nologo /W3 /Od /Zi /wd4996 $Defines /I`"$build`" `"$src`""
+    $common = "/nologo /W3 /Od /Zi /wd4996 $Defines /I`"$build`" `"$src`" $Link"
     cmd /c "`"$vcvars`" >nul 2>nul && cl $common /GS- /Fe:`"$exe.exe`" /Fo:`"$exe.obj`" /Fd:`"$exe.pdb`" >`"$exe.log`" && cl $common /fsanitize=address /Fe:`"$exe-asan.exe`" /Fo:`"$exe-asan.obj`" /Fd:`"$exe-asan.pdb`" >>`"$exe.log`""
     if ($LASTEXITCODE -ne 0) { Get-Content "$exe.log"; throw "build of $Harness failed" }
+}
+
+# libpng and zlib for the png group, in the versions of the PS2SDK ports YAOPL links (the strings in the
+# ELF): fetched and built once into build\deps
+function PngLib {
+    $deps = Join-Path $build "deps"
+    if (Test-Path (Join-Path $deps "png.lib")) { return $deps }
+    New-Item -ItemType Directory -Force $deps | Out-Null
+    $archives = @(
+        @("https://github.com/pnggroup/libpng/archive/refs/tags/v1.6.53.tar.gz", "libpng-1.6.53.tar.gz", "B20CEE717E11416D2F96CCC7D184F63730CA8CB2F03BFD0C4ED77FBC909C0BFF"),
+        @("https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz", "zlib-1.3.1.tar.gz", "9A93B2B7DFDAC77CEBA5A558A580E74667DD6FEDE4585B91EEFB60F03B72DF23"))
+    foreach ($a in $archives) {
+        $file = Join-Path $deps $a[1]
+        if (-not (Test-Path $file)) { Invoke-WebRequest -UseBasicParsing -Uri $a[0] -OutFile $file }
+        if ((Get-FileHash -Algorithm SHA256 $file).Hash -ne $a[2]) { Remove-Item $file; throw "$($a[1]): unexpected SHA-256" }
+        # Windows tar: a GNU tar earlier in PATH (Git Bash) takes C: for a remote host
+        & (Join-Path $env:SystemRoot "System32\tar.exe") -xzf $file -C $deps
+        if ($LASTEXITCODE -ne 0) { throw "cannot unpack $($a[1])" }
+    }
+    $png = Join-Path $deps "libpng-1.6.53"
+    $zlib = Join-Path $deps "zlib-1.3.1"
+    Copy-Item (Join-Path $png "scripts\pnglibconf.h.prebuilt") (Join-Path $png "pnglibconf.h")
+    $srcs = @(Get-ChildItem (Join-Path $png "png*.c") | Where-Object { $_.Name -ne "pngtest.c" }) +
+        @("adler32", "crc32", "deflate", "inffast", "inflate", "inftrees", "trees", "zutil" | ForEach-Object { Get-Item (Join-Path $zlib "$_.c") })
+    $list = ($srcs | ForEach-Object { "`"$($_.FullName)`"" }) -join " "
+    cmd /c "`"$vcvars`" >nul 2>nul && cd /d `"$deps`" && cl /nologo /c /O1 /W0 /DPNG_INTEL_SSE_OPT=0 /I`"$zlib`" $list >png.log && lib /nologo /out:png.lib *.obj >>png.log"
+    if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $deps "png.log"); throw "build of libpng failed" }
+    return $deps
 }
 
 function Run([string]$Exe, [string[]]$Arguments) {
@@ -371,6 +399,16 @@ if (Want "apps") {
 if (Want "sboom") {
     Build memleak sb "src\supportbase.c" "game_list_t", "sbReadList" -Defines "/DSB"
     Test "sbReadList, list allocation fails" memleak-sb "300"
+}
+
+if (Want "png") {
+    $deps = PngLib
+    $pngFuncs = "maxSize", "png_clut_t", "png_texture_t", "?pngTexture", "?png_reader_t", "texSizeValidate", "texPrepare", "texFree", "texEnd", "texReadMemFunction", "texReadPixels4", "texReadPixels8", "texReadPixels24", "texReadPixels32", "texReadData", "texLoadAll"
+    Build png t "src\textures.c" $pngFuncs -Defines "/I`"$deps\libpng-1.6.53`" /I`"$deps\zlib-1.3.1`"" -Link "`"$deps\png.lib`""
+    foreach ($t in "rgba", "pal4", "pal8", "trunc", "badzlib", "wide") { Test "png $t" png-t "load", (Join-Path $inputs "png_$t.png") }
+    foreach ($n in "2", "3", "4") { Test "png rgba, allocation $n fails" png-t "oom", (Join-Path $inputs "png_rgba.png"), $n }
+    Test "png pal8, allocation 2 fails" png-t "oom", (Join-Path $inputs "png_pal8.png"), "2"
+    Test "png pal4, a pal8 loads meanwhile" png-t "race", (Join-Path $inputs "png_pal4.png"), (Join-Path $inputs "png_pal8.png")
 }
 
 if (Want "texcache") {

@@ -303,6 +303,28 @@ app launch with an argument        plain: mass0:APPS/x/BOOT.ELF, argc 1, argumen
                                    asan:  mass0:APPS/x/BOOT.ELF, argc 1, argument "-arg"
 sbReadList, list allocation fails  plain: 0 games listed, 0 scanned nodes left
                                    asan:  0 games listed, 0 scanned nodes left
+png rgba                           plain: result 0, 64x48 CT32 | pixels read | OPL blocks left 0, libpng's largest block 32 KiB
+                                   asan:  result 0, 64x48 CT32 | pixels read | OPL blocks left 0, libpng's largest block 32 KiB
+png pal4                           plain: result 0, 32x16 T4 | pixels read, palette entry 1 08050403 | OPL blocks left 0, libpng's largest block 32 KiB
+                                   asan:  result 0, 32x16 T4 | pixels read, palette entry 1 08050403 | OPL blocks left 0, libpng's largest block 32 KiB
+png pal8                           plain: result 0, 32x16 T8 | pixels read, palette entry 1 80fbfcfd | OPL blocks left 0, libpng's largest block 32 KiB
+                                   asan:  result 0, 32x16 T8 | pixels read, palette entry 1 80fbfcfd | OPL blocks left 0, libpng's largest block 32 KiB
+png trunc                          plain: result -4, 64x48 CT32 | pixels never written | OPL blocks left 3, libpng's largest block 32 KiB
+                                   asan:  ASAN heap-buffer-overflow in texReadMemFunction
+png badzlib                        plain: result -4, 64x48 CT32 | pixels never written | OPL blocks left 3, libpng's largest block 32 KiB
+                                   asan:  result -4, 64x48 CT32 | pixels never written | OPL blocks left 3, libpng's largest block 32 KiB
+png wide                           plain: result -5, 1000000x1 CT32 | no pixels | OPL blocks left 0, libpng's largest block 3907 KiB
+                                   asan:  result -5, 1000000x1 CT32 | no pixels | OPL blocks left 0, libpng's largest block 3907 KiB
+png rgba, allocation 2 fails       plain: result 0, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
+                                   asan:  result 0, 64x48 CT32 | no pixels | OPL blocks left 0, libpng's largest block 7 KiB
+png rgba, allocation 3 fails       plain: CRASH 0xC0000005
+                                   asan:  ASAN access-violation in texReadData
+png rgba, allocation 4 fails       plain: result 0, 64x48 CT32 | pixels never written | OPL blocks left 0, libpng's largest block 7 KiB
+                                   asan:  result 0, 64x48 CT32 | pixels never written | OPL blocks left 0, libpng's largest block 7 KiB
+png pal8, allocation 2 fails       plain: CRASH 0xC0000005
+                                   asan:  ASAN access-violation in texLoadAll
+png pal4, a pal8 loads meanwhile   plain: CRASH 0xC0000005
+                                   asan:  ASAN negative-size-param in texReadPixels4
 art cache ok                       plain: loaded ART/SLUS_123.45_COV | cover shown
                                    asan:  loaded ART/SLUS_123.45_COV | cover shown
 art cache destroyed                plain: request on the freed cache: done
