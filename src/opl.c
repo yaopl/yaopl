@@ -279,10 +279,14 @@ static void itemExecSelect(struct menu_item *curMenu)
     if (support) {
         if (support->enabled) {
             if (curMenu->current) {
+                int id = curMenu->current->item.id;
+                int nameLength = support->itemGetNameLength(support, id);
+                char name[nameLength];
+                strncpy(name, curMenu->current->item.text, nameLength);
                 config_set_t *configSet = menuLoadConfig();
                 // No settings: the game left the list while they were loaded, and the menu is being rebuilt
-                if (configSet != NULL && menuCheckGameParentalLock(configSet) == 0)
-                    support->itemLaunch(support, curMenu->current->item.id, configSet);
+                if (configSet != NULL && menuCheckGameParentalLock(configSet) == 0 && menuIsCurrentItem(curMenu, id, name, nameLength))
+                    support->itemLaunch(support, id, configSet);
             }
         } else {
             // If we're trying to enable BDM support we need to enable it for all BDM menu slots.

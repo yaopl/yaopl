@@ -80,6 +80,15 @@ static s32 menuSemaId;
 static s32 menuListSemaId = -1;
 static ee_sema_t menuSema;
 
+// Delete, Rename and the launch wait for a dialog or for the settings, and the IO thread may reread the list meanwhile
+// (a device pulled or plugged, a refresh). Returns 1 if the menu's selected item is still the one with this id and name.
+int menuIsCurrentItem(menu_item_t *menu, int id, const char *name, int length)
+{
+    submenu_list_t *cur = menu->current;
+
+    return cur != NULL && cur->item.id == id && strncmp(cur->item.text, name, length) == 0;
+}
+
 static void menuRenameGame(submenu_list_t **submenu)
 {
     if (!selected_item->item->current) {
@@ -93,19 +102,22 @@ static void menuRenameGame(submenu_list_t **submenu)
 
     if (support) {
         if (support->itemRename) {
+            int id = selected_item->item->current->item.id;
+            int nameLength = support->itemGetNameLength(support, id);
+            char oldName[nameLength];
+            strncpy(oldName, selected_item->item->current->item.text, nameLength);
             if (menuCheckParentalLock() == 0) {
                 sfxPlay(SFX_MESSAGE);
-                int nameLength = support->itemGetNameLength(support, selected_item->item->current->item.id);
                 char newName[nameLength];
-                strncpy(newName, selected_item->item->current->item.text, nameLength);
+                strncpy(newName, oldName, nameLength);
                 if (guiShowKeyboard(newName, nameLength)) {
                     guiSwitchScreen(GUI_SCREEN_MAIN);
                     submenuDestroy(submenu);
 
                     // Only rename the file if the name changed; trying to rename a file with a file name that hasn't changed can cause the file
                     // to be deleted on certain file systems.
-                    if (strcmp(newName, selected_item->item->current->item.text) != 0) {
-                        support->itemRename(support, selected_item->item->current->item.id, newName);
+                    if (strncmp(newName, oldName, nameLength) != 0 && menuIsCurrentItem(selected_item->item, id, oldName, nameLength)) {
+                        support->itemRename(support, id, newName);
                         ioPutRequest(IO_MENU_UPDATE_DEFFERED, &support->mode);
                     }
                 }
@@ -127,12 +139,18 @@ static void menuDeleteGame(submenu_list_t **submenu)
 
     if (support) {
         if (support->itemDelete) {
+            int id = selected_item->item->current->item.id;
+            int nameLength = support->itemGetNameLength(support, id);
+            char name[nameLength];
+            strncpy(name, selected_item->item->current->item.text, nameLength);
             if (menuCheckParentalLock() == 0) {
                 if (guiMsgBox(_l(_STR_DELETE_WARNING), 1, NULL)) {
                     guiSwitchScreen(GUI_SCREEN_MAIN);
                     submenuDestroy(submenu);
-                    support->itemDelete(support, selected_item->item->current->item.id);
-                    ioPutRequest(IO_MENU_UPDATE_DEFFERED, &support->mode);
+                    if (menuIsCurrentItem(selected_item->item, id, name, nameLength)) {
+                        support->itemDelete(support, id);
+                        ioPutRequest(IO_MENU_UPDATE_DEFFERED, &support->mode);
+                    }
                 }
             }
         }
@@ -180,7 +198,7 @@ static void _menuRequestConfig()
             itemConfigId = selected_item->item->current->item.id;
             ioPutRequest(IO_CUSTOM_SIMPLEACTION, &_menuLoadConfig);
         }
-    } else if (itemConfig)
+    } else if (itemConfig || selected_item->item->current == NULL) // no game: the list was cleared
         actionStatus = 0;
 
     SignalSema(menuSemaId);

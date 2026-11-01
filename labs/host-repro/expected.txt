@@ -315,6 +315,22 @@ theme swap, fewer art caches       plain: frame after the swap drawn, 34 art req
                                    asan:  frame after the swap drawn, 34 art requests
 app menu, apps list reread         plain: the apps list shown, nothing deleted
                                    asan:  the apps list shown, nothing deleted
+selected game, delete-kept         plain: deleted: Gamma
+                                   asan:  deleted: Gamma
+selected game, delete-pulled       plain: deleted: nothing
+                                   asan:  deleted: nothing
+selected game, delete-reread       plain: deleted: nothing
+                                   asan:  deleted: nothing
+selected game, rename-kept         plain: renamed: Gamma to Gamma 2
+                                   asan:  renamed: Gamma to Gamma 2
+selected game, rename-pulled       plain: renamed: nothing
+                                   asan:  renamed: nothing
+selected game, launch-kept         plain: launched: Gamma with the settings of Gamma
+                                   asan:  launched: Gamma with the settings of Gamma
+selected game, launch-pulled       plain: launched: nothing
+                                   asan:  launched: nothing
+selected game, launch-loading      plain: launched: nothing
+                                   asan:  launched: nothing
 readFile ok                        plain: ok: buffer returned, size 4096, descriptors left open 0
                                    asan:  ok: buffer returned, size 4096, descriptors left open 0
 readFile nomem                     plain: nomem: buffer NULL, size 0, descriptors left open 0
